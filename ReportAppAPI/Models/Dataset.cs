@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
-using System.Drawing;
-using System.Text.Json.Serialization;
+using Newtonsoft.Json.Linq;
 
 namespace ReportAppAPI.Models
 {
@@ -8,8 +7,24 @@ namespace ReportAppAPI.Models
     {
         public string Label { get; set; }
         public List<double> Data { get; set; }
+        //[JsonProperty("backgroundColor", Required = Required.Default)]
+        //public JToken BackgroundColorToken { get; set; }
+        //[JsonIgnore]
+        //public System.Drawing.Color[] BackgroundColor
+        //{
+        //    get
+        //    {
+        //        if (BackgroundColorToken == null)
+        //            return null;
 
-        //[JsonPropertyName("borderColor")]
-       //public System.Drawing.Color BorderColor { get; set; }
+        //        if (BackgroundColorToken.Type == JTokenType.Array)
+        //            return BackgroundColorToken.ToObject<System.Drawing.Color[]>();
+
+        //        if (BackgroundColorToken.Type == JTokenType.String)
+        //            return new[] { System.Drawing.ColorTranslator.FromHtml(BackgroundColorToken.ToObject<string>()) };
+
+        //        return null;
+        //    }
+        //}
     }
 }

@@ -21,7 +21,8 @@ namespace ReportAppAPI.Controllers
             {
                 _chartService.PlotChart(module);
             }
-            return Ok("Chart(s) created");
+            _chartService.buildPdf();
+            return Ok("Chart(s) and PDF created");
         }
     }
 }
