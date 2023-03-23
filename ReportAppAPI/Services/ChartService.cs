@@ -24,27 +24,27 @@ namespace ReportAppAPI.Services
                 {
                     double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture).ToOADate()).ToArray();
                     double[] values = module.Datasets[0].Data.ToArray();
-                    string deviceName = module.Device.Name;
+                    string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId); //takes first name it finds only, not dynamic per module, to fix
                     foreach (var dataset in module.Datasets)
                     {
-                        plt.Title(deviceName);
-                        plt.AddScatter(xAxisData, dataset.Data.ToArray(), markerSize: 5, lineWidth: 1);
-                        plt.PlotText(text: dataset.Label, x: xAxisData[0] + 0.3, y: dataset.Data[0] - 0.7, /*color: lineColor,*/ alignment: Alignment.MiddleCenter, fontSize: 10, bold: true);
+                        plt.Title(chartTitle);
+                        plt.AddScatter(xAxisData, dataset.Data.ToArray(), markerSize: 5, lineWidth: 1, label: dataset.Label);
                         plt.XAxis.TickLabelFormat("dd/MM/yyyy", dateTimeFormat: true);
+                        plt.Legend(location: Alignment.LowerLeft);
                         for (int i = 0; i < xAxisData.Length; i++)
                         {
-                            plt.PlotText(text: dataset.Data[i].ToString(), x: xAxisData[i], y: dataset.Data[i] + 0.4, alignment: Alignment.MiddleCenter, fontSize: 10, bold: true, color: System.Drawing.Color.Black);
+                            plt.AddText(dataset.Data[i].ToString(), x: xAxisData[i], y: dataset.Data[i] - 0.4, color: System.Drawing.Color.Black);
                         }
                     }
                 }
                 else if (module.Type == "bar")
                 {
-                    string deviceName = module.Device.Name;
+                    string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
                     string[] labels = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture)).Select(date => date.ToString("dd/MM/yyyy")).ToArray();
                     double[] values = module.Datasets[0].Data.ToArray();
                     //System.Drawing.Color[] color = module.Datasets[0].BackgroundColor;
                     var bar = plt.AddBar(values);
-                    plt.Title(deviceName);
+                    plt.Title(chartTitle);
                     plt.XTicks(labels);
                     bar.ShowValuesAboveBars = true;
                     //bar.FillColor = color[3];
@@ -52,12 +52,11 @@ namespace ReportAppAPI.Services
                 }
                 else if (module.Type == "pie")
                 {
-                    string deviceName = module.Device.Name;
+                    string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
                     double[] values = module.Datasets[0].Data.ToArray();
                     string[] labels = module.Labels.ToArray();
                     var pie = plt.AddPie(values);
-                    plt.Title(deviceName);
-                    pie.Explode = true;
+                    plt.Title(chartTitle);
                     pie.ShowValues = true;
                     pie.SliceLabels = labels;
                     pie.OutlineSize = 1;
@@ -65,11 +64,11 @@ namespace ReportAppAPI.Services
                 }
                 else if (module.Type == "polarArea") // currently no use, coxcomb_chart
                 {
-                    string deviceName = module.Device.Name;
+                    string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
                     double[] values = module.Datasets[0].Data.ToArray();
                     string[] labels = module.Labels.ToArray();
                     var polarArea = plt.AddCoxcomb(values);
-                    plt.Title(deviceName);
+                    plt.Title(chartTitle);
                     polarArea.FillColors = plt.Palette.GetColors(5, 0, 0.5);
                     polarArea.SliceLabels = labels;
                 }
