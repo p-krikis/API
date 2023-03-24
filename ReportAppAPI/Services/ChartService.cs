@@ -33,7 +33,7 @@ namespace ReportAppAPI.Services
                         plt.Legend(location: Alignment.LowerLeft);
                         for (int i = 0; i < xAxisData.Length; i++)
                         {
-                            plt.AddText(dataset.Data[i].ToString(), x: xAxisData[i], y: dataset.Data[i] - 0.4, color: System.Drawing.Color.Black);
+                            plt.AddText(dataset.Data[i].ToString(), x: xAxisData[i] - 0.8, y: dataset.Data[i] - 0.4, color: System.Drawing.Color.Black);
                         }
                     }
                 }
@@ -74,7 +74,21 @@ namespace ReportAppAPI.Services
                 }
                 //else if (module.Type == "scatter") // currently no use
                 //{
+                //    string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
+                //    var dataset = module.ScatterData[0];
 
+                //    double[] xAxisData = dataset.XValues.ToArray();
+                //    double[] yAxisData = dataset.YValues.ToArray();
+                //    string[] labels = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture)).Select(date => date.ToString("dd/MM/yyyy")).ToArray();
+
+                //    plt.Title(chartTitle);
+                //    plt.AddScatter(xAxisData, yAxisData, markerSize: 5, lineWidth: 1);
+                //    plt.XTicks(xAxisData, labels);
+                //    plt.Legend(location: Alignment.LowerLeft);
+                //    for (int i = 0; i < xAxisData.Length; i++)
+                //    {
+                //        plt.AddText(yAxisData[i].ToString(), x: xAxisData[i], y: yAxisData[i] - 0.4, color: System.Drawing.Color.Black);
+                //    }
                 //}
                 else
                 {
@@ -104,7 +118,6 @@ namespace ReportAppAPI.Services
                     ImageData imageData = ImageDataFactory.Create(graphImage.FullName);
                     Image pdfImage = new Image(imageData);
                     pdfImage.SetAutoScale(true);
-                    //pdfImage.SetMargins(5,5,5,5);
                     document.Add(pdfImage);
                     imageCounter++;
                     if (imageCounter %2 == 0)
@@ -114,6 +127,7 @@ namespace ReportAppAPI.Services
                 }
                 document.Close();
             }
+
         }
     }
 }
