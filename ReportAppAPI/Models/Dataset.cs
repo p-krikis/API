@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Security.Cryptography.X509Certificates;
 
 namespace ReportAppAPI.Models
 {
@@ -7,13 +8,26 @@ namespace ReportAppAPI.Models
     {
         public string Label { get; set; }
         public List<double> Data { get; set; }
+        //public object[] Data { get; set; }
+        private object _backgroundColor;
+        public object BackgroundColor
+        {
+            get => _backgroundColor;
+            set
+            {
+                if (value is string)
+                {
+                    _backgroundColor = value;
+                }
+                else if (value is List<string>)
+                {
+                    _backgroundColor = value;
+                }
+            }
+        }
+        [JsonProperty("borderColor")]
+        public string BorderColor { get; set; }
     }
-    //public class ScatterData
-    //{
-    //    public List<double> XValues { get; set; }
-    //    public List<double> YValues { get; set; }
-    //    public List<string> Date { get; set; }
-    //}
 }
 //[JsonProperty("backgroundColor", Required = Required.Default)]
 //public JToken BackgroundColorToken { get; set; }
