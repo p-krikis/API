@@ -9,6 +9,7 @@ using iText.Layout.Element;
 using System.Data;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
+using Newtonsoft.Json.Serialization;
 
 namespace ReportAppAPI.Services
 {
@@ -114,7 +115,6 @@ namespace ReportAppAPI.Services
                 }
             }
         }
-
         public void buildPdf()
         {
             string pngFolderPath = @"C:\Users\praktiki1\Desktop\APIdump\PNGs";
