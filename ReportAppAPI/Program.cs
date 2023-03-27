@@ -6,19 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-});
-builder.Services.AddControllers().AddNewtonsoftJson(options =>
-{
-    options.SerializerSettings.NullValueHandling = NullValueHandling.Ignore;
-    options.SerializerSettings.MissingMemberHandling = MissingMemberHandling.Ignore;
-});
-//builder.Services.Configure<ApiBehaviorOptions>(options =>
-//{
-//    options.SuppressModelStateInvalidFilter = true;
-//});
+builder.Services.AddControllers().AddNewtonsoftJson();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 //builder.Services.AddSwaggerGen();

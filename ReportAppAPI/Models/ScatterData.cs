@@ -1,9 +1,9 @@
 ﻿namespace ReportAppAPI.Models
 {
-    public class DataPoint
+    public class ScatterData
     {
         public double? X { get; set; }
         public double? Y { get; set; }
-        public string Date { get; set; }
+        public DateTime Date { get; set; }
     }
 }
