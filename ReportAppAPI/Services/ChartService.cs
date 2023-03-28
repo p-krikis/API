@@ -10,12 +10,14 @@ using System.Data;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Serialization;
+using System.Reflection;
+using iText.Layout.Properties;
 
 namespace ReportAppAPI.Services
 {
     public class ChartService
     {
-        public void PlotChart(Module module)
+        public void PlotChart(Models.Module module)
         {
             var plt = new Plot();
             if (module.Type == "line")
@@ -34,18 +36,22 @@ namespace ReportAppAPI.Services
             {
                 PlotScatterChart(module, plt);
             }
+            else if (module.Type == "table")
+            {
+                return;
+            }
             else
             {
-                Debug.WriteLine($"Unsupported Chart type: {module.Type}");
+                Console.WriteLine($"Unsupported Chart type: {module.Type}");
             }
             plt.SaveFig($"C:\\Users\\praktiki1\\Desktop\\APIdump\\PNGs\\{module.Type}_chart.png");
         }
 
-        private void PlotLineChart(Module module, Plot plt)
+        private void PlotLineChart(Models.Module module, Plot plt)
         {
             double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture).ToOADate()).ToArray();
             double[] values = module.Datasets[0].Data.ToArray();
-            string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId); //takes first name it finds only, not dynamic per module, to fix
+            string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
             foreach (var dataset in module.Datasets)
             {
                 var colorLine = GetColorFromJToken(dataset.BorderColor);
@@ -60,7 +66,7 @@ namespace ReportAppAPI.Services
             }
         }
 
-        private void PlotBarChart(Module module, Plot plt)
+        private void PlotBarChart(Models.Module module, Plot plt)
         {
             string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
             string[] labels = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture)).Select(date => date.ToString("dd/MM/yyyy")).ToArray();
@@ -74,7 +80,7 @@ namespace ReportAppAPI.Services
             plt.SetAxisLimits(yMin: 0);
         }
 
-        private void PlotPieChart(Module module, Plot plt)
+        private void PlotPieChart(Models.Module module, Plot plt)
         {
             string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
             double[] values = module.Datasets[0].Data.ToArray();
@@ -94,7 +100,7 @@ namespace ReportAppAPI.Services
             pie.SliceFillColors = backgroundColors;
         }
 
-        private void PlotScatterChart(Module module, Plot plt)
+        private void PlotScatterChart(Models.Module module, Plot plt)
         {
             double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture).ToOADate()).ToArray();
             string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
@@ -115,7 +121,46 @@ namespace ReportAppAPI.Services
                 }
             }
         }
-        public void buildPdf()
+
+        private void CreateTable(Models.Module module, Document document)
+        {
+            var dataTable = new DataTable();
+            dataTable.Columns.Add("Labels");
+            foreach(var dataset in module.Datasets)
+            {
+                dataTable.Columns.Add(dataset.Label);
+            }
+            for (int i = 0; i < module.Labels.Length; i++)
+            {
+                var newRow = dataTable.NewRow();
+                newRow["Labels"] = module.Labels[i];
+                for (int j = 0; j < module.Datasets.Length; j++)
+                {
+                    newRow[module.Datasets[j].Label] = module.Datasets[j].Data[i];
+                }
+                dataTable.Rows.Add(newRow);
+            }
+            Table pdfTable = new Table(dataTable.Columns.Count);
+            pdfTable.SetWidth(UnitValue.CreatePercentValue(100));
+            foreach (DataColumn column in dataTable.Columns)
+            {
+                Cell headerCell = new Cell();
+                headerCell.Add(new Paragraph(column.ColumnName));
+                pdfTable.AddHeaderCell(headerCell);
+            }
+            foreach (DataRow row in dataTable.Rows)
+            {
+                foreach (var item in row.ItemArray)
+                {
+                    Cell dataCell = new Cell();
+                    dataCell.Add(new Paragraph(item.ToString()));
+                    pdfTable.AddCell(dataCell);
+                }
+            }
+            document.Add(pdfTable);
+        }
+
+        public void buildPdf(List<Models.Module> modules)
         {
             string pngFolderPath = @"C:\Users\praktiki1\Desktop\APIdump\PNGs";
             string pdfPath = @"C:\Users\praktiki1\Desktop\APIdump\PDFs\report.pdf";
@@ -124,17 +169,25 @@ namespace ReportAppAPI.Services
                 PdfWriter writer = new PdfWriter(stream);
                 PdfDocument pdfDocument = new PdfDocument(writer);
                 Document document = new Document(pdfDocument);
+                foreach (var module in modules)
+                {
+                    if (module.Type == "table")
+                    {
+                        CreateTable(module, document);
+                        document.Add(new AreaBreak());
+                    }
+                }
                 DirectoryInfo directoryInfo = new DirectoryInfo(pngFolderPath);
                 FileInfo[] graphImages = directoryInfo.GetFiles("*.png");
                 int imageCounter = 0;
                 foreach (FileInfo graphImage in graphImages)
                 {
                     ImageData imageData = ImageDataFactory.Create(graphImage.FullName);
-                    iText.Layout.Element.Image pdfImage = new iText.Layout.Element.Image(imageData);
+                    Image pdfImage = new Image(imageData);
                     pdfImage.SetAutoScale(true);
                     document.Add(pdfImage);
                     imageCounter++;
-                    if (imageCounter %2 == 0)
+                    if (imageCounter % 2 == 0)
                     {
                         document.Add(new AreaBreak());
                     }
@@ -204,5 +257,35 @@ namespace ReportAppAPI.Services
 //    for (int i = 0; i < xAxisData.Length; i++)
 //    {
 //        plt.AddText(yAxisData[i].ToString(), x: xAxisData[i], y: yAxisData[i] - 0.4, color: System.Drawing.Color.Black);
+//    }
+//}
+
+
+//public Table CreateTable(Module module)
+//{
+//    int numColumns = module.Datasets.Length + 1;
+//    Table table = new Table(numColumns);
+//    table.AddHeaderCell("Date)");
+//    foreach (var dataset in module.Datasets)
+//    {
+//        table.AddHeaderCell(dataset.Label);
+//    }
+//    for (int i = 0; i < module.Labels.Length; i++)
+//    {
+//        table.AddCell(module.Labels[i]);
+//        foreach (var dataset in module.Datasets)
+//        {
+//            table.AddCell(dataset.Data[i].ToString());
+//        }
+//    }
+//    return table;
+//}
+
+
+//foreach (var module in modules)
+//{
+//    if (module.Type == "table" && module.Table != null)
+//    {
+//        document.Add(module.Table);
 //    }
 //}

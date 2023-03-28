@@ -9,7 +9,7 @@ namespace ReportAppAPI.Models
         public List<double> Data { get; set; }
         public List<ScatterData>? ScatterData { get; set; }
         public JToken? BorderColor { get; set; }
-        public JToken BackgroundColor { get; set;}
+        public JToken? BackgroundColor { get; set;}
     }
 }
 //color string needs to be #RRGGBB or #AARRGGBB
