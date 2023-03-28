@@ -108,13 +108,25 @@ namespace ReportAppAPI.Services
             plt.Title(chartTitle);
             foreach (var dataset in module.Datasets)
             {
-                if (dataset.ScatterData != null)
+                if (dataset.ScatterData != null) //may not be needed, depends 
                 {
                     var color = GetColorFromJToken(dataset.BorderColor);
                     double[] xValues = dataset.ScatterData.Select(scatterData => scatterData.X.Value).ToArray();
                     double[] yValues = dataset.ScatterData.Select(scatterData => scatterData.Y.Value).ToArray();
                     plt.AddScatter(xValues, yValues, markerSize: 5, lineWidth: 0, label: dataset.Label, color: color);
+                    for (int i = 0; i < xValues.Length; i++)
+                    {
+                        plt.AddText(yValues[i].ToString(), x: xValues[i] - 0.5, y: yValues[i] - 0.5, color: System.Drawing.Color.Black, size: 9);
+                    }
                     plt.Legend(location: Alignment.LowerLeft);
+                    plt.XAxis.TickLabelFormat("dd/MM/yyyy", dateTimeFormat: true);
+                    var formattedLabels = module.Labels.Select(dateStr =>
+                    {
+                        DateTime date = DateTime.ParseExact(dateStr, "MM/dd/yyyy", CultureInfo.InvariantCulture);
+                        return date.ToString("dd/MM/yyyy");
+                    }).ToArray();
+                    plt.XTicks(xValues, formattedLabels);
+                    plt.XAxis.TickLabelStyle(rotation: 45);
                 }
             }
         }
