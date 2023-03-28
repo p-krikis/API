@@ -61,9 +61,10 @@ namespace ReportAppAPI.Services
                 plt.AddScatter(xAxisData, dataset.Data.Select(x => x.Value<double>()).ToArray(), markerSize: 5, lineWidth: 1, label: dataset.Label, color: colorLine);
                 plt.XAxis.TickLabelFormat("dd/MM/yyyy", dateTimeFormat: true);
                 plt.Legend(location: Alignment.LowerLeft);
+                plt.XAxis.TickLabelStyle(rotation: 45);
                 for (int i = 0; i < xAxisData.Length; i++)
                 {
-                    plt.AddText(dataset.Data[i].ToString(), x: xAxisData[i] - 0.8, y: ((double)dataset.Data[i]) - 0.4, color: System.Drawing.Color.Black);
+                    plt.AddText(dataset.Data[i].ToString(), x: xAxisData[i] - 0.3, y: ((double)dataset.Data[i]) - 0.4, color: System.Drawing.Color.Black, size: 9);
                 }
             }
         }
@@ -255,14 +256,3 @@ namespace ReportAppAPI.Services
 
     }
 }
-
-//else if (module.Type == "polarArea") // currently no use, coxcomb_chart
-//{
-//    string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
-//    double[] values = module.Datasets[0].Data.ToArray();
-//    string[] labels = module.Labels.ToArray();
-//    var polarArea = plt.AddCoxcomb(values);
-//    plt.Title(chartTitle);
-//    polarArea.FillColors = plt.Palette.GetColors(5, 0, 0.5);
-//    polarArea.SliceLabels = labels;
-//}
