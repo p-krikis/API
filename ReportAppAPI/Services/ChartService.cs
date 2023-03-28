@@ -34,6 +34,7 @@ namespace ReportAppAPI.Services
             }
             else if (module.Type == "scatter")
             {
+                ExtractScatterData(module);
                 PlotScatterChart(module, plt);
             }
             else if (module.Type == "table")
@@ -49,19 +50,20 @@ namespace ReportAppAPI.Services
 
         private void PlotLineChart(Models.Module module, Plot plt)
         {
+
             double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture).ToOADate()).ToArray();
-            double[] values = module.Datasets[0].Data.ToArray();
+            double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
             string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
             foreach (var dataset in module.Datasets)
             {
                 var colorLine = GetColorFromJToken(dataset.BorderColor);
                 plt.Title(chartTitle);
-                plt.AddScatter(xAxisData, dataset.Data.ToArray(), markerSize: 5, lineWidth: 1, label: dataset.Label, color: colorLine);
+                plt.AddScatter(xAxisData, dataset.Data.Select(x => x.Value<double>()).ToArray(), markerSize: 5, lineWidth: 1, label: dataset.Label, color: colorLine);
                 plt.XAxis.TickLabelFormat("dd/MM/yyyy", dateTimeFormat: true);
                 plt.Legend(location: Alignment.LowerLeft);
                 for (int i = 0; i < xAxisData.Length; i++)
                 {
-                    plt.AddText(dataset.Data[i].ToString(), x: xAxisData[i] - 0.8, y: dataset.Data[i] - 0.4, color: System.Drawing.Color.Black);
+                    plt.AddText(dataset.Data[i].ToString(), x: xAxisData[i] - 0.8, y: ((double)dataset.Data[i]) - 0.4, color: System.Drawing.Color.Black);
                 }
             }
         }
@@ -70,7 +72,7 @@ namespace ReportAppAPI.Services
         {
             string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
             string[] labels = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture)).Select(date => date.ToString("dd/MM/yyyy")).ToArray();
-            double[] values = module.Datasets[0].Data.ToArray();
+            double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
             System.Drawing.Color backgroundColor = GetColorFromJToken(module.Datasets[0].BackgroundColor);
             var bar = plt.AddBar(values);
             plt.Title(chartTitle);
@@ -83,7 +85,7 @@ namespace ReportAppAPI.Services
         private void PlotPieChart(Models.Module module, Plot plt)
         {
             string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
-            double[] values = module.Datasets[0].Data.ToArray();
+            double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
             string[] labels = module.Labels.ToArray();
             var pie = plt.AddPie(values);
             plt.Title(chartTitle);
@@ -102,22 +104,29 @@ namespace ReportAppAPI.Services
 
         private void PlotScatterChart(Models.Module module, Plot plt)
         {
-            double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture).ToOADate()).ToArray();
             string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
             plt.Title(chartTitle);
-
             foreach (var dataset in module.Datasets)
             {
                 if (dataset.ScatterData != null)
                 {
-                    var scatterData = dataset.ScatterData
-                        .Where(point => point.Y.HasValue)
-                        .Select(point => point.Y.Value)
-                        .ToArray();
-                    var colorLine = GetColorFromJToken(dataset.BorderColor);
-                    plt.AddScatter(xAxisData, scatterData, markerSize: 5, lineWidth: 0, label: dataset.Label, color: colorLine);
-                    plt.XAxis.TickLabelFormat("dd/MM/yyyy", dateTimeFormat: true);
+                    var color = GetColorFromJToken(dataset.BorderColor);
+                    double[] xValues = dataset.ScatterData.Select(scatterData => scatterData.X.Value).ToArray();
+                    double[] yValues = dataset.ScatterData.Select(scatterData => scatterData.Y.Value).ToArray();
+                    plt.AddScatter(xValues, yValues, markerSize: 5, lineWidth: 0, label: dataset.Label, color: color);
                     plt.Legend(location: Alignment.LowerLeft);
+                }
+            }
+        }
+
+
+        private void ExtractScatterData(Models.Module module)
+        {
+            foreach (var dataset in module.Datasets)
+            {
+                if (dataset.Data != null && dataset.Data.Length > 0 && dataset.Data[0].Type == JTokenType.Object)
+                {
+                    dataset.ScatterData = dataset.Data.Select(d => d.ToObject<ScatterData>()).ToList();
                 }
             }
         }
@@ -197,7 +206,11 @@ namespace ReportAppAPI.Services
         }
         private System.Drawing.Color GetColorFromJToken(JToken colorToken)
         {
-            if (colorToken.Type == JTokenType.String)
+            if (colorToken == null)
+            {
+                return System.Drawing.Color.Black;
+            }
+            else if (colorToken.Type == JTokenType.String)
             {
                 return ParseRgbaColor(colorToken.Value<string>());
             }
@@ -240,52 +253,4 @@ namespace ReportAppAPI.Services
 //    plt.Title(chartTitle);
 //    polarArea.FillColors = plt.Palette.GetColors(5, 0, 0.5);
 //    polarArea.SliceLabels = labels;
-//}
-//else if (module.Type == "scatter") // currently no use
-//{
-//    string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
-//    var dataset = module.ScatterData[0];
-
-//    double[] xAxisData = dataset.XValues.ToArray();
-//    double[] yAxisData = dataset.YValues.ToArray();
-//    string[] labels = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture)).Select(date => date.ToString("dd/MM/yyyy")).ToArray();
-
-//    plt.Title(chartTitle);
-//    plt.AddScatter(xAxisData, yAxisData, markerSize: 5, lineWidth: 0);
-//    plt.XTicks(xAxisData, labels);
-//    plt.Legend(location: Alignment.LowerLeft);
-//    for (int i = 0; i < xAxisData.Length; i++)
-//    {
-//        plt.AddText(yAxisData[i].ToString(), x: xAxisData[i], y: yAxisData[i] - 0.4, color: System.Drawing.Color.Black);
-//    }
-//}
-
-
-//public Table CreateTable(Module module)
-//{
-//    int numColumns = module.Datasets.Length + 1;
-//    Table table = new Table(numColumns);
-//    table.AddHeaderCell("Date)");
-//    foreach (var dataset in module.Datasets)
-//    {
-//        table.AddHeaderCell(dataset.Label);
-//    }
-//    for (int i = 0; i < module.Labels.Length; i++)
-//    {
-//        table.AddCell(module.Labels[i]);
-//        foreach (var dataset in module.Datasets)
-//        {
-//            table.AddCell(dataset.Data[i].ToString());
-//        }
-//    }
-//    return table;
-//}
-
-
-//foreach (var module in modules)
-//{
-//    if (module.Type == "table" && module.Table != null)
-//    {
-//        document.Add(module.Table);
-//    }
 //}
