@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using Newtonsoft.Json.Serialization;
 using System.Reflection;
 using iText.Layout.Properties;
+using System.Linq;
 
 namespace ReportAppAPI.Services
 {
@@ -47,7 +48,6 @@ namespace ReportAppAPI.Services
             }
             plt.SaveFig($"C:\\Users\\praktiki1\\Desktop\\APIdump\\PNGs\\{module.Type}_chart.png");
         }
-
         private void PlotLineChart(Models.Module module, Plot plt)
         {
 
@@ -68,21 +68,23 @@ namespace ReportAppAPI.Services
                 }
             }
         }
-
         private void PlotBarChart(Models.Module module, Plot plt)
         {
             string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
             string[] labels = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture)).Select(date => date.ToString("dd/MM/yyyy")).ToArray();
-            double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
-            System.Drawing.Color backgroundColor = GetColorFromJToken(module.Datasets[0].BackgroundColor);
-            var bar = plt.AddBar(values);
+            foreach (var dataset in module.Datasets)
+            {
+                double[] values = dataset.Data.Select(x => x.Value<double>()).ToArray();
+                System.Drawing.Color backgroundColor = GetColorFromJToken(dataset.BackgroundColor);
+                var bar = plt.AddBar(values);
+
+                bar.FillColor = backgroundColor;
+                bar.ShowValuesAboveBars = true;
+            }
             plt.Title(chartTitle);
             plt.XTicks(labels);
-            bar.ShowValuesAboveBars = true;
-            bar.FillColor = backgroundColor;
             plt.SetAxisLimits(yMin: 0);
         }
-
         private void PlotPieChart(Models.Module module, Plot plt)
         {
             string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
@@ -102,7 +104,6 @@ namespace ReportAppAPI.Services
             }
             pie.SliceFillColors = backgroundColors;
         }
-
         private void PlotScatterChart(Models.Module module, Plot plt)
         {
             string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
@@ -131,8 +132,6 @@ namespace ReportAppAPI.Services
                 }
             }
         }
-
-
         private void ExtractScatterData(Models.Module module)
         {
             foreach (var dataset in module.Datasets)
@@ -143,7 +142,6 @@ namespace ReportAppAPI.Services
                 }
             }
         }
-
         private void CreateTable(Models.Module module, Document document)
         {
             var dataTable = new DataTable();
@@ -181,7 +179,6 @@ namespace ReportAppAPI.Services
             }
             document.Add(pdfTable);
         }
-
         public void buildPdf(List<Models.Module> modules)
         {
             string pngFolderPath = @"C:\Users\praktiki1\Desktop\APIdump\PNGs"; //image sauce
@@ -254,6 +251,5 @@ namespace ReportAppAPI.Services
                 return System.Drawing.Color.Black;
             }
         }
-
     }
 }
