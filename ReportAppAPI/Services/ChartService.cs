@@ -17,7 +17,7 @@ namespace ReportAppAPI.Services
 {
     public class ChartService
     {
-        public void PlotChart(Models.Module module)
+        public void PlotChart(Models.Module module) //some conflict
         {
             var plt = new Plot();
             if (module.Type == "line")
@@ -109,7 +109,7 @@ namespace ReportAppAPI.Services
             plt.Title(chartTitle);
             foreach (var dataset in module.Datasets)
             {
-                if (dataset.ScatterData != null) //may not be needed, depends 
+                if (dataset.ScatterData != null) //may not be needed
                 {
                     var color = GetColorFromJToken(dataset.BorderColor);
                     double[] xValues = dataset.ScatterData.Select(scatterData => scatterData.X.Value).ToArray();
@@ -184,8 +184,8 @@ namespace ReportAppAPI.Services
 
         public void buildPdf(List<Models.Module> modules)
         {
-            string pngFolderPath = @"C:\Users\praktiki1\Desktop\APIdump\PNGs";
-            string pdfPath = @"C:\Users\praktiki1\Desktop\APIdump\PDFs\report.pdf";
+            string pngFolderPath = @"C:\Users\praktiki1\Desktop\APIdump\PNGs"; //image sauce
+            string pdfPath = @"C:\Users\praktiki1\Desktop\APIdump\PDFs\report.pdf"; //pdf dump loc
             using (FileStream stream = new FileStream(pdfPath, FileMode.Create, FileAccess.Write))
             {
                 PdfWriter writer = new PdfWriter(stream);
@@ -209,10 +209,11 @@ namespace ReportAppAPI.Services
                     pdfImage.SetAutoScale(true);
                     document.Add(pdfImage);
                     imageCounter++;
-                    if (imageCounter % 2 == 0)
+                    if (imageCounter % 2 == 0) //2 images per page
                     {
                         document.Add(new AreaBreak());
                     }
+
                 }
                 document.Close();
             }
