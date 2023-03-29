@@ -20,14 +20,21 @@ namespace ReportAppAPI.Services
     {
         public void PlotChart(Models.Module module) //some conflict
         {
-            var plt = new Plot();
+            var plt = new Plot(module.Width, module.Height);
             if (module.Type == "line")
             {
                 PlotLineChart(module, plt);
             }
             else if (module.Type == "bar")
             {
-                PlotBarChart(module, plt);
+                if (module.Aggregate != null)
+                {
+                    PlotAggregatedBarChart(module, plt);
+                }
+                else
+                {
+                    PlotBarChart(module, plt);
+                }
             }
             else if (module.Type == "pie")
             {
@@ -103,6 +110,19 @@ namespace ReportAppAPI.Services
                 backgroundColors[i] = GetColorFromJToken(module.Datasets[0].BackgroundColor[i]);
             }
             pie.SliceFillColors = backgroundColors;
+        }
+        private void PlotAggregatedBarChart(Models.Module module, Plot plt)
+        {
+            string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
+            string[] labels = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture)).Select(date => date.ToString("dd/MM/yyyy")).ToArray();
+            double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
+            System.Drawing.Color backgroundColor = GetColorFromJToken(module.Datasets[0].BackgroundColor);
+            var bar = plt.AddBar(values);
+            plt.Title(chartTitle);
+            plt.XTicks(labels);
+            bar.ShowValuesAboveBars = true;
+            bar.FillColor = backgroundColor;
+            plt.SetAxisLimits(yMin: 0);
         }
         private void PlotScatterChart(Models.Module module, Plot plt)
         {

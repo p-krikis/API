@@ -12,5 +12,6 @@ namespace ReportAppAPI.Models
         public int Width { get; set; }
         public int Height { get; set; }
         public Device Device { get; set; }
+        public string? Aggregate { get; set; }
     }
 }
