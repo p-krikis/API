@@ -9,16 +9,12 @@ using System.Data;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using iText.Layout.Properties;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc;
-using ScottPlot.Renderable;
-using iText.Kernel.Geom;
 
 namespace ReportAppAPI.Services
 {
     public class ChartService
     {
-        public void PlotChart(Models.Module module) //some conflict
+        public void PlotChart(Module module) //some conflict
         {
             var plt = new Plot(module.Width, module.Height);
             if (module.Type == "line")
@@ -49,6 +45,10 @@ namespace ReportAppAPI.Services
             {
                 return;
             }
+            else if (module.Type == "panel")
+            {
+                return;
+            }
             else
             {
                 Console.WriteLine($"Unsupported Chart type: {module.Type}");
@@ -65,16 +65,16 @@ namespace ReportAppAPI.Services
             {
                 var colorLine = GetColorFromJToken(dataset.BorderColor);
                 var backgroundColor = GetColorFromJToken(dataset.BackgroundColor);
-                plt.Title(chartTitle, size: 10);
+                plt.Title(chartTitle, size: 11);
                 plt.AddScatter(xAxisData, dataset.Data.Select(x => x.Value<double>()).ToArray(), markerSize: 5, lineWidth: 1, label: dataset.Label, color: colorLine);
                 plt.XAxis.TickLabelFormat("dd/MM/yyyy", dateTimeFormat: true);
                 var legend = plt.Legend(location: Alignment.UpperRight);
                 legend.Orientation = Orientation.Horizontal;
-                legend.FontSize = 8;
-                plt.XAxis.TickLabelStyle(rotation: 45, fontSize:9);
+                legend.FontSize = 9;
+                plt.XAxis.TickLabelStyle(rotation: 45, fontSize:10);
                 for (int i = 0; i < xAxisData.Length; i++)
                 {
-                    plt.AddText(dataset.Data[i].ToString(), x: xAxisData[i] - 0.3, y: ((double)dataset.Data[i]) - 0.4, color: System.Drawing.Color.Black, size: 8);
+                    plt.AddText(dataset.Data[i].ToString(), x: xAxisData[i] - 0.3, y: ((double)dataset.Data[i]) - 0.4, color: System.Drawing.Color.Black, size: 9);
                 }
             }
         }
@@ -87,14 +87,14 @@ namespace ReportAppAPI.Services
                 double[] values = dataset.Data.Select(x => x.Value<double>()).ToArray();
                 System.Drawing.Color backgroundColor = GetColorFromJToken(dataset.BackgroundColor);
                 var bar = plt.AddBar(values);
-                bar.Font.Size = 8;
+                bar.Font.Size = 9;
                 bar.FillColor = backgroundColor;
                 bar.ShowValuesAboveBars = true;
             }
-            plt.Title(chartTitle, size: 10);
+            plt.Title(chartTitle, size: 11);
             plt.XTicks(labels);
             plt.SetAxisLimits(yMin: 0);
-            plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
+            plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 9);
         }
         private void PlotPieChart(Module module, Plot plt)
         {
@@ -102,13 +102,13 @@ namespace ReportAppAPI.Services
             double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
             string[] labels = module.Labels.ToArray();
             var pie = plt.AddPie(values);
-            plt.Title(chartTitle, size: 10);
+            plt.Title(chartTitle, size: 11);
             pie.ShowValues = true;
             pie.SliceLabels = labels;
             pie.Explode = true;
             var legend = plt.Legend(true, Alignment.LowerCenter);
             legend.Orientation = Orientation.Horizontal;
-            legend.FontSize = 8;
+            legend.FontSize = 9;
             int sliceCount = values.Length;
             System.Drawing.Color[] backgroundColors = new System.Drawing.Color[sliceCount];
             for (int i = 0; i < sliceCount; i++)
@@ -124,18 +124,18 @@ namespace ReportAppAPI.Services
             double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
             System.Drawing.Color backgroundColor = GetColorFromJToken(module.Datasets[0].BackgroundColor);
             var bar = plt.AddBar(values);
-            plt.Title(chartTitle, size:10);
+            plt.Title(chartTitle, size:11);
             plt.XTicks(labels);
             bar.ShowValuesAboveBars = true;
             bar.FillColor = backgroundColor;
-            bar.Font.Size = 8;
+            bar.Font.Size = 9;
             plt.SetAxisLimits(yMin: 0);
-            plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
+            plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 9);
         }
         private void PlotScatterChart(Module module, Plot plt)
         {
             string chartTitle = string.Format("{2}, {0}, {1}", module.Device.Name, module.Device.DeviceId, module.Aggregate);
-            plt.Title(chartTitle, size: 10);
+            plt.Title(chartTitle, size: 11);
             foreach (var dataset in module.Datasets)
             {
                 if (dataset.ScatterData != null) //may not be needed
@@ -150,7 +150,7 @@ namespace ReportAppAPI.Services
                     }
                     var legend = plt.Legend(location: Alignment.UpperRight);
                     legend.Orientation = Orientation.Horizontal;
-                    legend.FontSize = 8;
+                    legend.FontSize = 9;
                     plt.XAxis.TickLabelFormat("dd/MM/yyyy", dateTimeFormat: true);
                     var formattedLabels = module.Labels.Select(dateStr =>
                     {
@@ -158,7 +158,7 @@ namespace ReportAppAPI.Services
                         return date.ToString("dd/MM/yyyy");
                     }).ToArray();
                     plt.XTicks(xValues, formattedLabels);
-                    plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
+                    plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 9);
                 }
             }
         }
@@ -209,6 +209,14 @@ namespace ReportAppAPI.Services
             }
             document.Add(pdfTable);
         }
+        private void CreatePanelTable(Module module, Document document)
+        {
+            int numColumns = 1;
+            Table panelTable = new Table(numColumns, true);
+            panelTable.AddHeaderCell(new Cell().Add(new Paragraph("The ").Add(module.Aggregate).Add(" value of ").Add(module.Datasets[0].Label)).SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER));
+            panelTable.AddCell(new Cell().Add(new Paragraph("The ").Add(module.Aggregate).Add(" value of ").Add(module.Datasets[0].Label).Add(" from ").Add(module.From).Add(" to ").Add(module.To).Add(" was ").Add(module.Datasets[0].Data[0].ToString())).SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER));
+            document.Add(panelTable);
+        }
         public void buildPdf(List<Module> modules)
         {
             string pngFolderPath = @"C:\Users\praktiki1\Desktop\APIdump\PNGs"; //image sauce
@@ -225,6 +233,10 @@ namespace ReportAppAPI.Services
                         CreateTable(module, document);
                         document.Add(new AreaBreak());
                     }
+                    else if (module.Type == "panel")
+                    {
+                        CreatePanelTable(module, document);
+                    }
                 }
                 DirectoryInfo directoryInfo = new DirectoryInfo(pngFolderPath);
                 FileInfo[] graphImages = directoryInfo.GetFiles("*.png");
@@ -233,7 +245,7 @@ namespace ReportAppAPI.Services
                 {
                     ImageData imageData = ImageDataFactory.Create(graphImage.FullName);
                     Image pdfImage = new Image(imageData);
-                    pdfImage.SetAutoScale(false);
+                    pdfImage.SetAutoScale(true);
                     document.Add(pdfImage);
                     imageCounter++;
                     if (imageCounter % 2 == 0) //2 images per page
@@ -282,6 +294,9 @@ namespace ReportAppAPI.Services
         }
     }
 }
+
+//a4 page size template?
+
 //public void buildPdf(List<Models.Module> modules)
 //{
 //    string pngFolderPath = @"C:\Users\praktiki1\Desktop\APIdump\PNGs"; //image sauce
