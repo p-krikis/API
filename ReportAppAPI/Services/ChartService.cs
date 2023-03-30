@@ -1,6 +1,5 @@
 ﻿using ScottPlot;
 using ReportAppAPI.Models;
-using System.Diagnostics;
 using System.Globalization;
 using iText.Kernel.Pdf;
 using iText.Layout;
@@ -9,10 +8,11 @@ using iText.Layout.Element;
 using System.Data;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
-using Newtonsoft.Json.Serialization;
-using System.Reflection;
 using iText.Layout.Properties;
 using System.Linq;
+using Microsoft.AspNetCore.Mvc;
+using ScottPlot.Renderable;
+using iText.Kernel.Geom;
 
 namespace ReportAppAPI.Services
 {
@@ -27,13 +27,13 @@ namespace ReportAppAPI.Services
             }
             else if (module.Type == "bar")
             {
-                if (module.Aggregate != null)
+                if (string.IsNullOrEmpty(module.Aggregate))
                 {
-                    PlotAggregatedBarChart(module, plt);
+                    PlotBarChart(module, plt);
                 }
                 else
                 {
-                    PlotBarChart(module, plt);
+                    PlotAggregatedBarChart(module, plt);
                 }
             }
             else if (module.Type == "pie")
@@ -53,31 +53,34 @@ namespace ReportAppAPI.Services
             {
                 Console.WriteLine($"Unsupported Chart type: {module.Type}");
             }
-            plt.SaveFig($"C:\\Users\\praktiki1\\Desktop\\APIdump\\PNGs\\{module.Type}_chart.png");
+            plt.SaveFig($"C:\\Users\\praktiki1\\Desktop\\APIdump\\PNGs\\{module.Aggregate}_{module.Type}_chart.png");
         }
         private void PlotLineChart(Models.Module module, Plot plt)
         {
 
             double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture).ToOADate()).ToArray();
             double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
-            string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
+            string chartTitle = string.Format("{2}, {0}, {1}", module.Device.Name, module.Device.DeviceId, module.Aggregate);
             foreach (var dataset in module.Datasets)
             {
                 var colorLine = GetColorFromJToken(dataset.BorderColor);
-                plt.Title(chartTitle);
+                var backgroundColor = GetColorFromJToken(dataset.BackgroundColor);
+                plt.Title(chartTitle, size: 10);
                 plt.AddScatter(xAxisData, dataset.Data.Select(x => x.Value<double>()).ToArray(), markerSize: 5, lineWidth: 1, label: dataset.Label, color: colorLine);
                 plt.XAxis.TickLabelFormat("dd/MM/yyyy", dateTimeFormat: true);
-                plt.Legend(location: Alignment.LowerLeft);
-                plt.XAxis.TickLabelStyle(rotation: 45);
+                var legend = plt.Legend(location: Alignment.UpperRight);
+                legend.Orientation = Orientation.Horizontal;
+                legend.FontSize = 8;
+                plt.XAxis.TickLabelStyle(rotation: 45, fontSize:9);
                 for (int i = 0; i < xAxisData.Length; i++)
                 {
-                    plt.AddText(dataset.Data[i].ToString(), x: xAxisData[i] - 0.3, y: ((double)dataset.Data[i]) - 0.4, color: System.Drawing.Color.Black, size: 9);
+                    plt.AddText(dataset.Data[i].ToString(), x: xAxisData[i] - 0.3, y: ((double)dataset.Data[i]) - 0.4, color: System.Drawing.Color.Black, size: 8);
                 }
             }
         }
         private void PlotBarChart(Models.Module module, Plot plt)
         {
-            string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
+            string chartTitle = string.Format("{2}, {0}, {1}", module.Device.Name, module.Device.DeviceId, module.Aggregate);
             string[] labels = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture)).Select(date => date.ToString("dd/MM/yyyy")).ToArray();
             foreach (var dataset in module.Datasets)
             {
@@ -88,21 +91,24 @@ namespace ReportAppAPI.Services
                 bar.FillColor = backgroundColor;
                 bar.ShowValuesAboveBars = true;
             }
-            plt.Title(chartTitle);
+            plt.Title(chartTitle, size: 10);
             plt.XTicks(labels);
             plt.SetAxisLimits(yMin: 0);
+            plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
         }
         private void PlotPieChart(Models.Module module, Plot plt)
         {
-            string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
+            string chartTitle = string.Format("{2}, {0}, {1}", module.Device.Name, module.Device.DeviceId, module.Aggregate);
             double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
             string[] labels = module.Labels.ToArray();
             var pie = plt.AddPie(values);
-            plt.Title(chartTitle);
+            plt.Title(chartTitle, size: 10);
             pie.ShowValues = true;
             pie.SliceLabels = labels;
             pie.Explode = true;
-            plt.Legend();
+            var legend = plt.Legend(true, Alignment.LowerCenter);
+            legend.Orientation = Orientation.Horizontal;
+            legend.FontSize = 8;
             int sliceCount = values.Length;
             System.Drawing.Color[] backgroundColors = new System.Drawing.Color[sliceCount];
             for (int i = 0; i < sliceCount; i++)
@@ -113,21 +119,22 @@ namespace ReportAppAPI.Services
         }
         private void PlotAggregatedBarChart(Models.Module module, Plot plt)
         {
-            string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
-            string[] labels = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture)).Select(date => date.ToString("dd/MM/yyyy")).ToArray();
+            string chartTitle = string.Format("{2}, {0}, {1}", module.Device.Name, module.Device.DeviceId, module.Aggregate);
+            string[] labels = module.Labels.ToArray();
             double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
             System.Drawing.Color backgroundColor = GetColorFromJToken(module.Datasets[0].BackgroundColor);
             var bar = plt.AddBar(values);
-            plt.Title(chartTitle);
+            plt.Title(chartTitle, size:10);
             plt.XTicks(labels);
             bar.ShowValuesAboveBars = true;
             bar.FillColor = backgroundColor;
             plt.SetAxisLimits(yMin: 0);
+            plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
         }
         private void PlotScatterChart(Models.Module module, Plot plt)
         {
-            string chartTitle = string.Format("{0}, {1}", module.Device.Name, module.Device.DeviceId);
-            plt.Title(chartTitle);
+            string chartTitle = string.Format("{2}, {0}, {1}", module.Device.Name, module.Device.DeviceId, module.Aggregate);
+            plt.Title(chartTitle, size: 10);
             foreach (var dataset in module.Datasets)
             {
                 if (dataset.ScatterData != null) //may not be needed
@@ -140,7 +147,9 @@ namespace ReportAppAPI.Services
                     {
                         plt.AddText(yValues[i].ToString(), x: xValues[i] - 0.5, y: yValues[i] - 0.5, color: System.Drawing.Color.Black, size: 9);
                     }
-                    plt.Legend(location: Alignment.LowerLeft);
+                    var legend = plt.Legend(location: Alignment.UpperRight);
+                    legend.Orientation = Orientation.Horizontal;
+                    legend.FontSize = 8;
                     plt.XAxis.TickLabelFormat("dd/MM/yyyy", dateTimeFormat: true);
                     var formattedLabels = module.Labels.Select(dateStr =>
                     {
@@ -148,7 +157,7 @@ namespace ReportAppAPI.Services
                         return date.ToString("dd/MM/yyyy");
                     }).ToArray();
                     plt.XTicks(xValues, formattedLabels);
-                    plt.XAxis.TickLabelStyle(rotation: 45);
+                    plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
                 }
             }
         }
@@ -207,7 +216,7 @@ namespace ReportAppAPI.Services
             {
                 PdfWriter writer = new PdfWriter(stream);
                 PdfDocument pdfDocument = new PdfDocument(writer);
-                Document document = new Document(pdfDocument);
+                Document document = new Document(pdfDocument, PageSize.A4);
                 foreach (var module in modules)
                 {
                     if (module.Type == "table")
@@ -223,7 +232,7 @@ namespace ReportAppAPI.Services
                 {
                     ImageData imageData = ImageDataFactory.Create(graphImage.FullName);
                     Image pdfImage = new Image(imageData);
-                    pdfImage.SetAutoScale(true);
+                    pdfImage.SetAutoScale(false);
                     document.Add(pdfImage);
                     imageCounter++;
                     if (imageCounter % 2 == 0) //2 images per page
