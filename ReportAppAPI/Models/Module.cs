@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-
-namespace ReportAppAPI.Models
+﻿namespace ReportAppAPI.Models
 {
     public class Module
     {
@@ -14,6 +12,6 @@ namespace ReportAppAPI.Models
         public Device Device { get; set; }
         public string? Aggregate { get; set; }
         public string? From { get; set; }
-        public string? To { get; set; } 
+        public string? To { get; set; }
     }
 }

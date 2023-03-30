@@ -1,14 +1,14 @@
-﻿using ScottPlot;
-using ReportAppAPI.Models;
-using System.Globalization;
+﻿using iText.IO.Image;
 using iText.Kernel.Pdf;
 using iText.Layout;
-using iText.IO.Image;
 using iText.Layout.Element;
-using System.Data;
-using Newtonsoft.Json.Linq;
-using System.Text.RegularExpressions;
 using iText.Layout.Properties;
+using Newtonsoft.Json.Linq;
+using ReportAppAPI.Models;
+using ScottPlot;
+using System.Data;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace ReportAppAPI.Services
 {
@@ -71,7 +71,7 @@ namespace ReportAppAPI.Services
                 var legend = plt.Legend(location: Alignment.UpperRight);
                 legend.Orientation = Orientation.Horizontal;
                 legend.FontSize = 9;
-                plt.XAxis.TickLabelStyle(rotation: 45, fontSize:10);
+                plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 10);
                 for (int i = 0; i < xAxisData.Length; i++)
                 {
                     plt.AddText(dataset.Data[i].ToString(), x: xAxisData[i] - 0.3, y: ((double)dataset.Data[i]) - 0.4, color: System.Drawing.Color.Black, size: 9);
@@ -124,7 +124,7 @@ namespace ReportAppAPI.Services
             double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
             System.Drawing.Color backgroundColor = GetColorFromJToken(module.Datasets[0].BackgroundColor);
             var bar = plt.AddBar(values);
-            plt.Title(chartTitle, size:11);
+            plt.Title(chartTitle, size: 11);
             plt.XTicks(labels);
             bar.ShowValuesAboveBars = true;
             bar.FillColor = backgroundColor;
@@ -176,7 +176,7 @@ namespace ReportAppAPI.Services
         {
             var dataTable = new DataTable();
             dataTable.Columns.Add("Labels");
-            foreach(var dataset in module.Datasets)
+            foreach (var dataset in module.Datasets)
             {
                 dataTable.Columns.Add(dataset.Label);
             }
@@ -287,8 +287,8 @@ namespace ReportAppAPI.Services
                 float a = float.Parse(match.Groups[4].Value, CultureInfo.InvariantCulture);
                 return System.Drawing.Color.FromArgb((int)(a * 255), r, g, b);
             }
-            else 
-            { 
+            else
+            {
                 return System.Drawing.Color.Black;
             }
         }
