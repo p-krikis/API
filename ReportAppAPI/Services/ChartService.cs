@@ -55,7 +55,7 @@ namespace ReportAppAPI.Services
             }
             plt.SaveFig($"C:\\Users\\praktiki1\\Desktop\\APIdump\\PNGs\\{module.Aggregate}_{module.Type}_chart.png");
         }
-        private void PlotLineChart(Models.Module module, Plot plt)
+        private void PlotLineChart(Module module, Plot plt)
         {
 
             double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture).ToOADate()).ToArray();
@@ -78,7 +78,7 @@ namespace ReportAppAPI.Services
                 }
             }
         }
-        private void PlotBarChart(Models.Module module, Plot plt)
+        private void PlotBarChart(Module module, Plot plt)
         {
             string chartTitle = string.Format("{2}, {0}, {1}", module.Device.Name, module.Device.DeviceId, module.Aggregate);
             string[] labels = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture)).Select(date => date.ToString("dd/MM/yyyy")).ToArray();
@@ -87,7 +87,7 @@ namespace ReportAppAPI.Services
                 double[] values = dataset.Data.Select(x => x.Value<double>()).ToArray();
                 System.Drawing.Color backgroundColor = GetColorFromJToken(dataset.BackgroundColor);
                 var bar = plt.AddBar(values);
-
+                bar.Font.Size = 8;
                 bar.FillColor = backgroundColor;
                 bar.ShowValuesAboveBars = true;
             }
@@ -96,7 +96,7 @@ namespace ReportAppAPI.Services
             plt.SetAxisLimits(yMin: 0);
             plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
         }
-        private void PlotPieChart(Models.Module module, Plot plt)
+        private void PlotPieChart(Module module, Plot plt)
         {
             string chartTitle = string.Format("{2}, {0}, {1}", module.Device.Name, module.Device.DeviceId, module.Aggregate);
             double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
@@ -117,7 +117,7 @@ namespace ReportAppAPI.Services
             }
             pie.SliceFillColors = backgroundColors;
         }
-        private void PlotAggregatedBarChart(Models.Module module, Plot plt)
+        private void PlotAggregatedBarChart(Module module, Plot plt)
         {
             string chartTitle = string.Format("{2}, {0}, {1}", module.Device.Name, module.Device.DeviceId, module.Aggregate);
             string[] labels = module.Labels.ToArray();
@@ -128,10 +128,11 @@ namespace ReportAppAPI.Services
             plt.XTicks(labels);
             bar.ShowValuesAboveBars = true;
             bar.FillColor = backgroundColor;
+            bar.Font.Size = 8;
             plt.SetAxisLimits(yMin: 0);
             plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 8);
         }
-        private void PlotScatterChart(Models.Module module, Plot plt)
+        private void PlotScatterChart(Module module, Plot plt)
         {
             string chartTitle = string.Format("{2}, {0}, {1}", module.Device.Name, module.Device.DeviceId, module.Aggregate);
             plt.Title(chartTitle, size: 10);
@@ -161,7 +162,7 @@ namespace ReportAppAPI.Services
                 }
             }
         }
-        private void ExtractScatterData(Models.Module module)
+        private void ExtractScatterData(Module module)
         {
             foreach (var dataset in module.Datasets)
             {
@@ -171,7 +172,7 @@ namespace ReportAppAPI.Services
                 }
             }
         }
-        private void CreateTable(Models.Module module, Document document)
+        private void CreateTable(Module module, Document document)
         {
             var dataTable = new DataTable();
             dataTable.Columns.Add("Labels");
@@ -208,7 +209,7 @@ namespace ReportAppAPI.Services
             }
             document.Add(pdfTable);
         }
-        public void buildPdf(List<Models.Module> modules)
+        public void buildPdf(List<Module> modules)
         {
             string pngFolderPath = @"C:\Users\praktiki1\Desktop\APIdump\PNGs"; //image sauce
             string pdfPath = @"C:\Users\praktiki1\Desktop\APIdump\PDFs\report.pdf"; //pdf dump loc
@@ -216,7 +217,7 @@ namespace ReportAppAPI.Services
             {
                 PdfWriter writer = new PdfWriter(stream);
                 PdfDocument pdfDocument = new PdfDocument(writer);
-                Document document = new Document(pdfDocument, PageSize.A4);
+                Document document = new Document(pdfDocument);
                 foreach (var module in modules)
                 {
                     if (module.Type == "table")
@@ -239,7 +240,6 @@ namespace ReportAppAPI.Services
                     {
                         document.Add(new AreaBreak());
                     }
-
                 }
                 document.Close();
             }
@@ -282,3 +282,39 @@ namespace ReportAppAPI.Services
         }
     }
 }
+//public void buildPdf(List<Models.Module> modules)
+//{
+//    string pngFolderPath = @"C:\Users\praktiki1\Desktop\APIdump\PNGs"; //image sauce
+//    string pdfPath = @"C:\Users\praktiki1\Desktop\APIdump\PDFs\report.pdf"; //pdf dump loc
+//    using (FileStream stream = new FileStream(pdfPath, FileMode.Create, FileAccess.Write))
+//    {
+//        PdfWriter writer = new PdfWriter(stream);
+//        PdfDocument pdfDocument = new PdfDocument(writer);
+//        Document document = new Document(pdfDocument, PageSize.A4); // Set the PageSize to A4
+//        foreach (var module in modules)
+//        {
+//            if (module.Type == "table")
+//            {
+//                CreateTable(module, document);
+//                document.Add(new AreaBreak());
+//            }
+//        }
+//        DirectoryInfo directoryInfo = new DirectoryInfo(pngFolderPath);
+//        FileInfo[] graphImages = directoryInfo.GetFiles("*.png");
+//        int imageCounter = 0;
+//        foreach (FileInfo graphImage in graphImages)
+//        {
+//            ImageData imageData = ImageDataFactory.Create(graphImage.FullName);
+//            Image pdfImage = new Image(imageData);
+//            pdfImage.SetAutoScale(false);
+//            document.Add(pdfImage);
+//            imageCounter++;
+//            if (imageCounter % 2 == 0) //2 images per page
+//            {
+//                document.Add(new AreaBreak());
+//            }
+
+//        }
+//        document.Close();
+//    }
+//}
