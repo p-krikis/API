@@ -92,7 +92,7 @@ namespace ReportAppAPI.Services
                 }
                 foreach (var image in images)
                 {
-                    Image pdfImage = new Image(image.Item1);
+                    Image pdfImage = new(image.Item1);
                     pdfImage.SetFixedPosition(image.Item2, pdfDocument.GetPage(1).GetPageSize().GetHeight() - image.Item3 - pdfImage.GetImageHeight());
                     document.Add(pdfImage);
                 }

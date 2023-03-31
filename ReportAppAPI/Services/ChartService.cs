@@ -1,8 +1,4 @@
-﻿using iText.IO.Image;
-using iText.Kernel.Pdf;
-using iText.Layout;
-using iText.Layout.Element;
-using iText.Layout.Properties;
+﻿using iText.Layout;
 using Newtonsoft.Json.Linq;
 using ReportAppAPI.Models;
 using ScottPlot;
