@@ -51,28 +51,29 @@ namespace ReportAppAPI.Services
             }
             plt.SaveFig($"C:\\Users\\praktiki1\\Desktop\\APIdump\\PNGs\\{module.Aggregate}_{module.Type}_chart.png");
         }
-        
         private void PlotLineChart(Module module, Plot plt)
         {
             double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture).ToOADate()).ToArray();
             double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
-            string chartTitle = string.Format("{2}, {0}, {1}", module.Device.Name, module.Device.DeviceId, module.Aggregate);
+            
+            string chartTitle = string.Format("{1} {0}", module.Device.Name, module.Aggregate);
+            
             foreach (var dataset in module.Datasets)
             {
                 var colorLine = GetColorFromJToken(dataset.BorderColor);
                 var backgroundColor = GetColorFromJToken(dataset.BackgroundColor);
-                plt.Title(chartTitle, size: 11);
                 plt.AddScatter(xAxisData, dataset.Data.Select(x => x.Value<double>()).ToArray(), markerSize: 5, lineWidth: 1, label: dataset.Label, color: colorLine);
-                plt.XAxis.TickLabelFormat("dd/MM/yyyy", dateTimeFormat: true);
-                var legend = plt.Legend(location: Alignment.UpperRight);
-                legend.Orientation = Orientation.Horizontal;
-                legend.FontSize = 9;
-                plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 10);
                 for (int i = 0; i < xAxisData.Length; i++)
                 {
                     plt.AddText(dataset.Data[i].ToString(), x: xAxisData[i] - 0.3, y: ((double)dataset.Data[i]) - 0.4, color: System.Drawing.Color.Black, size: 9);
                 }
             }
+            plt.Title(chartTitle, size: 11);
+            plt.XAxis.TickLabelFormat("dd/MM/yyyy", dateTimeFormat: true);
+            var legend = plt.Legend(location: Alignment.UpperRight);
+            legend.Orientation = Orientation.Horizontal;
+            legend.FontSize = 9;
+            plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 10);
         }
         private void PlotBarChart(Module module, Plot plt)
         {
@@ -94,7 +95,7 @@ namespace ReportAppAPI.Services
         }
         private void PlotPieChart(Module module, Plot plt)
         {
-            string chartTitle = string.Format("{2}, {0}, {1}", module.Device.Name, module.Device.DeviceId, module.Aggregate);
+            string chartTitle = string.Format("{1} {0}", module.Device.Name, module.Aggregate);
             double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
             string[] labels = module.Labels.ToArray();
             var pie = plt.AddPie(values);

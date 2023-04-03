@@ -49,6 +49,7 @@ namespace ReportAppAPI.Services
                     }
                 }
                 document.Add(pdfTable);
+                document.Add(new AreaBreak());
             }
             else
             {
@@ -116,7 +117,7 @@ namespace ReportAppAPI.Services
                     if (module.Type == "table")
                     {
                         CreateTable(module, document);
-                        document.Add(new AreaBreak());
+                        //document.Add(new AreaBreak());
                     }
                     else if (module.Type == "panel")
                     {
