@@ -55,7 +55,7 @@ namespace ReportAppAPI.Services
         {
             if (string.IsNullOrEmpty (module.Aggregate))
             {
-                return string.Format("{0}", module.Device.Name, module.Aggregate);
+                return string.Format("{0}", module.Device.Name, module.Aggregate); //placeholder
             }
             else
             {
@@ -146,28 +146,25 @@ namespace ReportAppAPI.Services
             plt.Title(chartTitle, size: 11);
             foreach (var dataset in module.Datasets)
             {
-                if (dataset.ScatterData != null) //may not be needed
+                var color = GetColorFromJToken(dataset.BorderColor);
+                double[] xValues = dataset.ScatterData.Select(scatterData => scatterData.X.Value).ToArray();
+                double[] yValues = dataset.ScatterData.Select(scatterData => scatterData.Y.Value).ToArray();
+                plt.AddScatter(xValues, yValues, markerSize: 5, lineWidth: 0, label: dataset.Label, color: color);
+                for (int i = 0; i < xValues.Length; i++)
                 {
-                    var color = GetColorFromJToken(dataset.BorderColor);
-                    double[] xValues = dataset.ScatterData.Select(scatterData => scatterData.X.Value).ToArray();
-                    double[] yValues = dataset.ScatterData.Select(scatterData => scatterData.Y.Value).ToArray();
-                    plt.AddScatter(xValues, yValues, markerSize: 5, lineWidth: 0, label: dataset.Label, color: color);
-                    for (int i = 0; i < xValues.Length; i++)
-                    {
-                        plt.AddText(yValues[i].ToString(), x: xValues[i] - 0.5, y: yValues[i] - 0.5, color: System.Drawing.Color.Black, size: 9);
-                    }
-                    var legend = plt.Legend(location: Alignment.UpperRight);
-                    legend.Orientation = Orientation.Horizontal;
-                    legend.FontSize = 9;
-                    plt.XAxis.TickLabelFormat("dd/MM/yyyy", dateTimeFormat: true);
-                    var formattedLabels = module.Labels.Select(dateStr =>
-                    {
-                        DateTime date = DateTime.ParseExact(dateStr, "MM/dd/yyyy", CultureInfo.InvariantCulture);
-                        return date.ToString("dd/MM/yyyy");
-                    }).ToArray();
-                    plt.XTicks(xValues, formattedLabels);
-                    plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 9);
+                    plt.AddText(yValues[i].ToString(), x: xValues[i] - 0.5, y: yValues[i] - 0.5, color: System.Drawing.Color.Black, size: 9);
                 }
+                var legend = plt.Legend(location: Alignment.UpperRight);
+                legend.Orientation = Orientation.Horizontal;
+                legend.FontSize = 9;
+                plt.XAxis.TickLabelFormat("dd/MM/yyyy", dateTimeFormat: true);
+                var formattedLabels = module.Labels.Select(dateStr =>
+                {
+                    DateTime date = DateTime.ParseExact(dateStr, "MM/dd/yyyy", CultureInfo.InvariantCulture);
+                    return date.ToString("dd/MM/yyyy");
+                }).ToArray();
+                plt.XTicks(xValues, formattedLabels);
+                plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 9);
             }
         }
         private void ExtractScatterData(Module module)
