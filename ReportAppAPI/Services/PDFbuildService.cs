@@ -48,6 +48,43 @@ namespace ReportAppAPI.Services
             }
             document.Add(pdfTable);
         }
+        private void CreateAggregatedTable(Module module, Document document)
+        {
+            var dataTable = new DataTable();
+            dataTable.Columns.Add("Labels");
+            foreach (var dataset in module.Datasets)
+            {
+                dataTable.Columns.Add(dataset.Label);
+            }
+            for (int i = 0; i < module.Labels.Length; i++)
+            {
+                var newRow = dataTable.NewRow();
+                newRow["Labels"] = module.Labels[i];
+                for (int j = 0; j < module.Datasets.Length; j++)
+                {
+                    newRow[module.Datasets[j].Label] = module.Datasets[j].Data[i];
+                }
+                dataTable.Rows.Add(newRow);
+            }
+            Table pdfTable = new Table(dataTable.Columns.Count);
+            pdfTable.SetWidth(UnitValue.CreatePercentValue(100));
+            foreach (DataColumn column in dataTable.Columns)
+            {
+                Cell headerCell = new Cell();
+                headerCell.Add(new Paragraph(column.ColumnName));
+                pdfTable.AddHeaderCell(headerCell);
+            }
+            foreach (DataRow row in dataTable.Rows)
+            {
+                foreach (var item in row.ItemArray)
+                {
+                    Cell dataCell = new Cell();
+                    dataCell.Add(new Paragraph(item.ToString()));
+                    pdfTable.AddCell(dataCell);
+                }
+            }
+            document.Add(pdfTable);
+        }
 
         private void CreatePanelTable(Module module, Document document)
         {
@@ -74,8 +111,15 @@ namespace ReportAppAPI.Services
                 {
                     if (module.Type == "table")
                     {
-                        CreateTable(module, document);
-                        document.Add(new AreaBreak());
+                        if (string.IsNullOrEmpty(module.Aggregate))
+                        {
+                            CreateTable(module, document);
+                        }
+                        else
+                        {
+                            CreateAggregatedTable(module, document);
+                            document.Add(new AreaBreak());
+                        }
                     }
                     else if (module.Type == "panel")
                     {
