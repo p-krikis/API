@@ -16,7 +16,7 @@ namespace ReportAppAPI.Services
             if (string.IsNullOrEmpty(module.Aggregate))
             {
                 var dataTable = new DataTable();
-                dataTable.Columns.Add("Dates");
+                dataTable.Columns.Add($"{module.Device.Name}");
                 foreach (var dataset in module.Datasets)
                 {
                     dataTable.Columns.Add(dataset.Label);
@@ -24,7 +24,7 @@ namespace ReportAppAPI.Services
                 for (int i = 0; i < module.Labels.Length; i++)
                 {
                     var newRow = dataTable.NewRow();
-                    newRow["Dates"] = module.Labels[i];
+                    newRow[$"{module.Device.Name}"] = module.Labels[i];
                     for (int j = 0; j < module.Datasets.Length; j++)
                     {
                         newRow[module.Datasets[j].Label] = module.Datasets[j].Data[i];
@@ -36,7 +36,8 @@ namespace ReportAppAPI.Services
                 foreach (DataColumn column in dataTable.Columns)
                 {
                     Cell headerCell = new Cell();
-                    headerCell.Add(new Paragraph(column.ColumnName));
+                    Text headerText = new Text(column.ColumnName).SetBold();
+                    headerCell.Add(new Paragraph(headerText));
                     pdfTable.AddHeaderCell(headerCell);
                 }
                 foreach (DataRow row in dataTable.Rows)
@@ -74,7 +75,8 @@ namespace ReportAppAPI.Services
                 foreach (DataColumn column in dataTable.Columns)
                 {
                     Cell headerCell = new Cell();
-                    headerCell.Add(new Paragraph(column.ColumnName));
+                    Text headerText = new Text(column.ColumnName).SetBold();
+                    headerCell.Add(new Paragraph(headerText));
                     pdfTable.AddHeaderCell(headerCell);
                 }
                 foreach (DataRow row in dataTable.Rows)
@@ -135,7 +137,7 @@ namespace ReportAppAPI.Services
                 }
                 foreach (var image in images)
                 {
-                    int lastPageNumber = pdfDocument.GetNumberOfPages();
+                    int lastPageNumber = pdfDocument.GetNumberOfPages(); //used to always print images to last page
                     Image pdfImage = new(image.Item1);
                     pdfImage.SetFixedPosition(image.Item2, pdfDocument.GetPage(lastPageNumber).GetPageSize().GetHeight() - image.Item3 - pdfImage.GetImageHeight());
                     document.Add(pdfImage);

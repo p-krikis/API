@@ -51,12 +51,23 @@ namespace ReportAppAPI.Services
             }
             plt.SaveFig($"C:\\Users\\praktiki1\\Desktop\\APIdump\\PNGs\\{module.Aggregate}_{module.Type}_chart.png");
         }
+        public string GetChartTitle(Module module)
+        {
+            if (string.IsNullOrEmpty (module.Aggregate))
+            {
+                return string.Format("{0}", module.Device.Name, module.Aggregate);
+            }
+            else
+            {
+                return string.Format("{1}, {0}", module.Device.Name, module.Aggregate);
+            }
+        }
         private void PlotLineChart(Module module, Plot plt)
         {
             double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture).ToOADate()).ToArray();
             double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
             
-            string chartTitle = string.Format("{1} {0}", module.Device.Name, module.Aggregate);
+            string chartTitle = GetChartTitle(module);
             
             foreach (var dataset in module.Datasets)
             {
@@ -77,7 +88,7 @@ namespace ReportAppAPI.Services
         }
         private void PlotBarChart(Module module, Plot plt)
         {
-            string chartTitle = string.Format("{2}, {0}, {1}", module.Device.Name, module.Device.DeviceId, module.Aggregate);
+            string chartTitle = GetChartTitle(module);
             string[] labels = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture)).Select(date => date.ToString("dd/MM/yyyy")).ToArray();
             foreach (var dataset in module.Datasets)
             {
@@ -95,7 +106,7 @@ namespace ReportAppAPI.Services
         }
         private void PlotPieChart(Module module, Plot plt)
         {
-            string chartTitle = string.Format("{1} {0}", module.Device.Name, module.Aggregate);
+            string chartTitle = GetChartTitle(module);
             double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
             string[] labels = module.Labels.ToArray();
             var pie = plt.AddPie(values);
@@ -116,7 +127,7 @@ namespace ReportAppAPI.Services
         }
         private void PlotAggregatedBarChart(Module module, Plot plt)
         {
-            string chartTitle = string.Format("{2}, {0}, {1}", module.Device.Name, module.Device.DeviceId, module.Aggregate);
+            string chartTitle = GetChartTitle(module);
             string[] labels = module.Labels.ToArray();
             double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
             System.Drawing.Color backgroundColor = GetColorFromJToken(module.Datasets[0].BackgroundColor);
@@ -131,7 +142,7 @@ namespace ReportAppAPI.Services
         }
         private void PlotScatterChart(Module module, Plot plt)
         {
-            string chartTitle = string.Format("{2}, {0}, {1}", module.Device.Name, module.Device.DeviceId, module.Aggregate);
+            string chartTitle = GetChartTitle(module);
             plt.Title(chartTitle, size: 11);
             foreach (var dataset in module.Datasets)
             {
