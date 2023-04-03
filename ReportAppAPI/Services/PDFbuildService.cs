@@ -16,7 +16,7 @@ namespace ReportAppAPI.Services
             if (string.IsNullOrEmpty(module.Aggregate))
             {
                 var dataTable = new DataTable();
-                dataTable.Columns.Add("Labels");
+                dataTable.Columns.Add("Dates");
                 foreach (var dataset in module.Datasets)
                 {
                     dataTable.Columns.Add(dataset.Label);
@@ -24,7 +24,7 @@ namespace ReportAppAPI.Services
                 for (int i = 0; i < module.Labels.Length; i++)
                 {
                     var newRow = dataTable.NewRow();
-                    newRow["Labels"] = module.Labels[i];
+                    newRow["Dates"] = module.Labels[i];
                     for (int j = 0; j < module.Datasets.Length; j++)
                     {
                         newRow[module.Datasets[j].Label] = module.Datasets[j].Data[i];
@@ -53,7 +53,7 @@ namespace ReportAppAPI.Services
             else
             {
                 var dataTable = new DataTable();
-                dataTable.Columns.Add("Labels");
+                dataTable.Columns.Add($"{module.Aggregate}");
                 foreach (var dataset in module.Datasets)
                 {
                     dataTable.Columns.Add(dataset.Label);
@@ -61,7 +61,7 @@ namespace ReportAppAPI.Services
                 for (int i = 0; i < module.Labels.Length; i++)
                 {
                     var newRow = dataTable.NewRow();
-                    newRow["Labels"] = module.Labels[i];
+                    newRow[$"{module.Aggregate}"] = module.Labels[i];
                     for (int j = 0; j < module.Datasets.Length; j++)
                     {
                         newRow[module.Datasets[j].Label] = module.Datasets[j].Data[i];
@@ -121,6 +121,7 @@ namespace ReportAppAPI.Services
                     else if (module.Type == "panel")
                     {
                         CreatePanelTable(module, document);
+                        //document.Add(new AreaBreak());
                     }
                     else
                     {
@@ -130,12 +131,12 @@ namespace ReportAppAPI.Services
                         ImageData imageData = ImageDataFactory.Create(imagePath);
                         images.Add(new Tuple<ImageData, float, float>(imageData, x, y));
                     }
-                    //document.Add(new AreaBreak());
                 }
                 foreach (var image in images)
                 {
+                    int lastPageNumber = pdfDocument.GetNumberOfPages();
                     Image pdfImage = new(image.Item1);
-                    pdfImage.SetFixedPosition(image.Item2, pdfDocument.GetPage(1).GetPageSize().GetHeight() - image.Item3 - pdfImage.GetImageHeight());
+                    pdfImage.SetFixedPosition(image.Item2, pdfDocument.GetPage(lastPageNumber).GetPageSize().GetHeight() - image.Item3 - pdfImage.GetImageHeight());
                     document.Add(pdfImage);
                 }
                 document.Close();
