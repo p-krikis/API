@@ -48,43 +48,6 @@ namespace ReportAppAPI.Services
             }
             document.Add(pdfTable);
         }
-        private void CreateAggregatedTable(Module module, Document document)
-        {
-            var dataTable = new DataTable();
-            dataTable.Columns.Add("Labels");
-            foreach (var dataset in module.Datasets)
-            {
-                dataTable.Columns.Add(dataset.Label);
-            }
-            for (int i = 0; i < module.Labels.Length; i++)
-            {
-                var newRow = dataTable.NewRow();
-                newRow["Labels"] = module.Labels[i];
-                for (int j = 0; j < module.Datasets.Length; j++)
-                {
-                    newRow[module.Datasets[j].Label] = module.Datasets[j].Data[i];
-                }
-                dataTable.Rows.Add(newRow);
-            }
-            Table pdfTable = new Table(dataTable.Columns.Count);
-            pdfTable.SetWidth(UnitValue.CreatePercentValue(100));
-            foreach (DataColumn column in dataTable.Columns)
-            {
-                Cell headerCell = new Cell();
-                headerCell.Add(new Paragraph(column.ColumnName));
-                pdfTable.AddHeaderCell(headerCell);
-            }
-            foreach (DataRow row in dataTable.Rows)
-            {
-                foreach (var item in row.ItemArray)
-                {
-                    Cell dataCell = new Cell();
-                    dataCell.Add(new Paragraph(item.ToString()));
-                    pdfTable.AddCell(dataCell);
-                }
-            }
-            document.Add(pdfTable);
-        }
 
         private void CreatePanelTable(Module module, Document document)
         {
@@ -99,7 +62,7 @@ namespace ReportAppAPI.Services
         {
             string pngFolderPath = @"C:\Users\praktiki1\Desktop\APIdump\PNGs"; //image sauce
             string pdfPath = @"C:\Users\praktiki1\Desktop\APIdump\PDFs\report.pdf"; //pdf dump loc
-            float pageWidth = 776f; //hardcoded page width 2x images (2x368px) + 2x padding (2x20px) left-right
+            float pageWidth = 861f; //hardcoded page width 2x images (2x368px) + 2x padding (2x20px) left-right
             using (FileStream stream = new FileStream(pdfPath, FileMode.Create, FileAccess.Write))
             {
                 PdfWriter writer = new PdfWriter(stream);
@@ -111,15 +74,8 @@ namespace ReportAppAPI.Services
                 {
                     if (module.Type == "table")
                     {
-                        if (string.IsNullOrEmpty(module.Aggregate))
-                        {
-                            CreateTable(module, document);
-                        }
-                        else
-                        {
-                            CreateAggregatedTable(module, document);
-                            document.Add(new AreaBreak());
-                        }
+                        CreateTable(module, document);
+                        document.Add(new AreaBreak());
                     }
                     else if (module.Type == "panel")
                     {
