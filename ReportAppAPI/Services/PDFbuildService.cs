@@ -13,40 +13,81 @@ namespace ReportAppAPI.Services
     {
         private void CreateTable(Module module, Document document)
         {
-            var dataTable = new DataTable();
-            dataTable.Columns.Add("Labels");
-            foreach (var dataset in module.Datasets)
+            if (string.IsNullOrEmpty(module.Aggregate))
             {
-                dataTable.Columns.Add(dataset.Label);
-            }
-            for (int i = 0; i < module.Labels.Length; i++)
-            {
-                var newRow = dataTable.NewRow();
-                newRow["Labels"] = module.Labels[i];
-                for (int j = 0; j < module.Datasets.Length; j++)
+                var dataTable = new DataTable();
+                dataTable.Columns.Add("Labels");
+                foreach (var dataset in module.Datasets)
                 {
-                    newRow[module.Datasets[j].Label] = module.Datasets[j].Data[i];
+                    dataTable.Columns.Add(dataset.Label);
                 }
-                dataTable.Rows.Add(newRow);
-            }
-            Table pdfTable = new Table(dataTable.Columns.Count);
-            pdfTable.SetWidth(UnitValue.CreatePercentValue(100));
-            foreach (DataColumn column in dataTable.Columns)
-            {
-                Cell headerCell = new Cell();
-                headerCell.Add(new Paragraph(column.ColumnName));
-                pdfTable.AddHeaderCell(headerCell);
-            }
-            foreach (DataRow row in dataTable.Rows)
-            {
-                foreach (var item in row.ItemArray)
+                for (int i = 0; i < module.Labels.Length; i++)
                 {
-                    Cell dataCell = new Cell();
-                    dataCell.Add(new Paragraph(item.ToString()));
-                    pdfTable.AddCell(dataCell);
+                    var newRow = dataTable.NewRow();
+                    newRow["Labels"] = module.Labels[i];
+                    for (int j = 0; j < module.Datasets.Length; j++)
+                    {
+                        newRow[module.Datasets[j].Label] = module.Datasets[j].Data[i];
+                    }
+                    dataTable.Rows.Add(newRow);
                 }
+                Table pdfTable = new Table(dataTable.Columns.Count);
+                pdfTable.SetWidth(UnitValue.CreatePercentValue(100));
+                foreach (DataColumn column in dataTable.Columns)
+                {
+                    Cell headerCell = new Cell();
+                    headerCell.Add(new Paragraph(column.ColumnName));
+                    pdfTable.AddHeaderCell(headerCell);
+                }
+                foreach (DataRow row in dataTable.Rows)
+                {
+                    foreach (var item in row.ItemArray)
+                    {
+                        Cell dataCell = new Cell();
+                        dataCell.Add(new Paragraph(item.ToString()));
+                        pdfTable.AddCell(dataCell);
+                    }
+                }
+                document.Add(pdfTable);
             }
-            document.Add(pdfTable);
+            else
+            {
+                var dataTable = new DataTable();
+                dataTable.Columns.Add("Labels");
+                foreach (var dataset in module.Datasets)
+                {
+                    dataTable.Columns.Add(dataset.Label);
+                }
+                for (int i = 0; i < module.Labels.Length; i++)
+                {
+                    var newRow = dataTable.NewRow();
+                    newRow["Labels"] = module.Labels[i];
+                    for (int j = 0; j < module.Datasets.Length; j++)
+                    {
+                        newRow[module.Datasets[j].Label] = module.Datasets[j].Data[i];
+                    }
+                    dataTable.Rows.Add(newRow);
+                }
+                Table pdfTable = new Table(dataTable.Columns.Count);
+                pdfTable.SetWidth(UnitValue.CreatePercentValue(100));
+                foreach (DataColumn column in dataTable.Columns)
+                {
+                    Cell headerCell = new Cell();
+                    headerCell.Add(new Paragraph(column.ColumnName));
+                    pdfTable.AddHeaderCell(headerCell);
+                }
+                foreach (DataRow row in dataTable.Rows)
+                {
+                    foreach (var item in row.ItemArray)
+                    {
+                        Cell dataCell = new Cell();
+                        dataCell.Add(new Paragraph(item.ToString()));
+                        pdfTable.AddCell(dataCell);
+                    }
+                }
+                document.Add(pdfTable);
+            }
+            
         }
 
         private void CreatePanelTable(Module module, Document document)
@@ -89,6 +130,7 @@ namespace ReportAppAPI.Services
                         ImageData imageData = ImageDataFactory.Create(imagePath);
                         images.Add(new Tuple<ImageData, float, float>(imageData, x, y));
                     }
+                    //document.Add(new AreaBreak());
                 }
                 foreach (var image in images)
                 {
