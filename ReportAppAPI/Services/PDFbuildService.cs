@@ -120,6 +120,7 @@ namespace ReportAppAPI.Services
                 pdfDocument.SetDefaultPageSize(new PageSize(parentWidth, parentHeight));
                 Document document = new Document(pdfDocument);
                 List<Tuple<ImageData, float, float>> images = new List<Tuple<ImageData, float, float>>();
+                Dictionary<string, int> fileCounters = new Dictionary<string, int>();
                 foreach (var module in modules)
                 {
                     if (string.IsNullOrEmpty(module.Type))
@@ -138,19 +139,29 @@ namespace ReportAppAPI.Services
                     }
                     else
                     {
-                        int fileCounter = 0;
+                        string key = $"{module.Aggregate}_{module.Type}";
+                        int fileCounter = fileCounters.ContainsKey(key) ? fileCounters[key] : 0;
+
                         string imagePath = System.IO.Path.Combine(pngFolderPath, $"{module.Aggregate}_{module.Type}_chart{fileCounter}.png");
 
-                        
+                        // Loop through all the files with the same prefix until you find one that doesn't exist
                         while (File.Exists(imagePath))
                         {
                             float x = module.Left;
-                            float y = module.Top;
+                            float y = module.Top + 200;
                             ImageData imageData = ImageDataFactory.Create(imagePath);
                             images.Add(new Tuple<ImageData, float, float>(imageData, x, y));
 
                             fileCounter++;
                             imagePath = System.IO.Path.Combine(pngFolderPath, $"{module.Aggregate}_{module.Type}_chart{fileCounter}.png");
+                        }
+                        if (fileCounters.ContainsKey(key))
+                        {
+                            fileCounters[key] = fileCounter;
+                        }
+                        else
+                        {
+                            fileCounters.Add(key, fileCounter);
                         }
                     }
                 }
