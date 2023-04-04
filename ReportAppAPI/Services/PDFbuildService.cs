@@ -148,7 +148,7 @@ namespace ReportAppAPI.Services
                         while (File.Exists(imagePath))
                         {
                             float x = module.Left;
-                            float y = module.Top + 200;
+                            float y = module.Top;
                             ImageData imageData = ImageDataFactory.Create(imagePath);
                             images.Add(new Tuple<ImageData, float, float>(imageData, x, y));
 
