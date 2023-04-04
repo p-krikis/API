@@ -101,22 +101,33 @@ namespace ReportAppAPI.Services
             panelTable.AddCell(new Cell().Add(new Paragraph("The ").Add(module.Aggregate).Add(" value of ").Add(module.Datasets[0].Label).Add(" from ").Add(module.From).Add(" to ").Add(module.To).Add(" was ").Add(module.Datasets[0].Data[0].ToString())).SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER));
             document.Add(panelTable);
         }
+        private void CreateHeader(Module module, Document document)
+        {
+            document.Add(new Paragraph($"{module.Title}").SetTextAlignment(TextAlignment.CENTER).SetFontSize(16).SetBold());
+            document.Add(new Paragraph($"{module.Text}").SetTextAlignment(TextAlignment.CENTER));
+            document.Add(new Paragraph(" "));
+        }
 
         public void buildPdf(List<Module> modules)
         {
             string pngFolderPath = @"C:\Users\praktiki1\Desktop\APIdump\PNGs"; //image sauce
             string pdfPath = @"C:\Users\praktiki1\Desktop\APIdump\PDFs\report.pdf"; //pdf dump loc
-            float pageWidth = 861f; //hardcoded page width 2x images (2x368px) + 2x padding (2x20px) left-right
+            float pageWidth = 788f; //hardcoded page width 2x images (2x368px) + 2x padding (2x20px) left-right
+            float pageHeight = 1122f; //hardcoded page height
             using (FileStream stream = new FileStream(pdfPath, FileMode.Create, FileAccess.Write))
             {
                 PdfWriter writer = new PdfWriter(stream);
                 PdfDocument pdfDocument = new PdfDocument(writer);
-                pdfDocument.SetDefaultPageSize(new PageSize(pageWidth, PageSize.A4.GetHeight())); //hardcoded custom page size
+                pdfDocument.SetDefaultPageSize(new PageSize(pageWidth, pageHeight)); //hardcoded custom page size
                 Document document = new Document(pdfDocument);
                 List<Tuple<ImageData, float, float>> images = new List<Tuple<ImageData, float, float>>();
                 foreach (var module in modules)
                 {
-                    if (module.Type == "table")
+                    if (string.IsNullOrEmpty(module.Type))
+                    {
+                        CreateHeader(module, document);
+                    }
+                    else if (module.Type == "table")
                     {
                         CreateTable(module, document);
                         //document.Add(new AreaBreak());
@@ -135,6 +146,7 @@ namespace ReportAppAPI.Services
                         images.Add(new Tuple<ImageData, float, float>(imageData, x, y));
                     }
                 }
+                document.Add(new AreaBreak());
                 foreach (var image in images)
                 {
                     int lastPageNumber = pdfDocument.GetNumberOfPages(); //used to always print images to last page
