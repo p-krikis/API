@@ -90,7 +90,6 @@ namespace ReportAppAPI.Services
                 }
                 document.Add(pdfTable);
             }
-            
         }
 
         private void CreatePanelTable(Module module, Document document)
@@ -112,13 +111,13 @@ namespace ReportAppAPI.Services
         {
             string pngFolderPath = @"C:\Users\praktiki1\Desktop\APIdump\PNGs"; //image sauce
             string pdfPath = @"C:\Users\praktiki1\Desktop\APIdump\PDFs\report.pdf"; //pdf dump loc
-            float pageWidth = 788f; //hardcoded page width 2x images (2x368px) + 2x padding (2x20px) left-right
-            float pageHeight = 1122f; //hardcoded page height
             using (FileStream stream = new FileStream(pdfPath, FileMode.Create, FileAccess.Write))
             {
+                float parentWidth = modules[0].ParentWidth;
+                float parentHeight = modules[0].ParentHeight;
                 PdfWriter writer = new PdfWriter(stream);
                 PdfDocument pdfDocument = new PdfDocument(writer);
-                pdfDocument.SetDefaultPageSize(new PageSize(pageWidth, pageHeight)); //hardcoded custom page size
+                pdfDocument.SetDefaultPageSize(new PageSize(parentWidth, parentHeight));
                 Document document = new Document(pdfDocument);
                 List<Tuple<ImageData, float, float>> images = new List<Tuple<ImageData, float, float>>();
                 foreach (var module in modules)
@@ -139,11 +138,20 @@ namespace ReportAppAPI.Services
                     }
                     else
                     {
-                        float x = module.Left;
-                        float y = module.Top;
-                        string imagePath = System.IO.Path.Combine(pngFolderPath, $"{module.Aggregate}_{module.Type}_chart.png");
-                        ImageData imageData = ImageDataFactory.Create(imagePath);
-                        images.Add(new Tuple<ImageData, float, float>(imageData, x, y));
+                        int fileCounter = 0;
+                        string imagePath = System.IO.Path.Combine(pngFolderPath, $"{module.Aggregate}_{module.Type}_chart{fileCounter}.png");
+
+                        
+                        while (File.Exists(imagePath))
+                        {
+                            float x = module.Left;
+                            float y = module.Top;
+                            ImageData imageData = ImageDataFactory.Create(imagePath);
+                            images.Add(new Tuple<ImageData, float, float>(imageData, x, y));
+
+                            fileCounter++;
+                            imagePath = System.IO.Path.Combine(pngFolderPath, $"{module.Aggregate}_{module.Type}_chart{fileCounter}.png");
+                        }
                     }
                 }
                 document.Add(new AreaBreak());

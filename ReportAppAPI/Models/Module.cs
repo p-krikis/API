@@ -1,4 +1,6 @@
-﻿namespace ReportAppAPI.Models
+﻿using System.Security.Cryptography.X509Certificates;
+
+namespace ReportAppAPI.Models
 {
     public class Module
     {
@@ -10,8 +12,10 @@
         public Dataset[]? Datasets { get; set; }
         public int Top { get; set; }
         public int Left { get; set; }
-        public int Width { get; set; }
-        public int Height { get; set; }
+        public double Width { get; set; }
+        public double Height { get; set; }
+        public float ParentWidth { get; set; }
+        public float ParentHeight { get; set; }
         public Device? Device { get; set; }
         public string? Aggregate { get; set; }
         public string? From { get; set; }

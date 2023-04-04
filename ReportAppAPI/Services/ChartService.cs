@@ -12,7 +12,9 @@ namespace ReportAppAPI.Services
     {
         public void PlotChart(Module module)
         {
-            var plt = new Plot(module.Width, module.Height);
+            int newWidth = (int)Math.Round((double)module.ParentWidth * ((double)module.Width / 100));
+            int newHeight = (int)Math.Round((double)module.ParentHeight * ((double)module.Height / 100));
+            var plt = new Plot(newWidth, newHeight);
             if (module.Type == "line")
             {
                 PlotLineChart(module, plt);
@@ -49,7 +51,12 @@ namespace ReportAppAPI.Services
             {
                 Console.WriteLine($"Unsupported Chart type: {module.Type}");
             }
-            plt.SaveFig($"C:\\Users\\praktiki1\\Desktop\\APIdump\\PNGs\\{module.Aggregate}_{module.Type}_chart.png");
+            int fileCounter = 0;
+            if (File.Exists($"C:\\Users\\praktiki1\\Desktop\\APIdump\\PNGs\\{module.Aggregate}_{module.Type}_chart{fileCounter}.png"))
+            {
+                fileCounter++;
+            }
+            plt.SaveFig($"C:\\Users\\praktiki1\\Desktop\\APIdump\\PNGs\\{module.Aggregate}_{module.Type}_chart{fileCounter}.png");
         }
         public string GetChartTitle(Module module)
         {
