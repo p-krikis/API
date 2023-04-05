@@ -6,7 +6,6 @@ using iText.Layout.Element;
 using iText.Layout.Properties;
 using ReportAppAPI.Models;
 using System.Data;
-using System.Diagnostics.CodeAnalysis;
 
 namespace ReportAppAPI.Services
 {
@@ -107,11 +106,23 @@ namespace ReportAppAPI.Services
             document.Add(new Paragraph($"{module.Text}").SetTextAlignment(TextAlignment.CENTER));
             document.Add(new Paragraph(" "));
         }
+        public string GetTargetFolderPath()
+        {
+            string imagePath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string targetFolderPath = System.IO.Path.Combine(imagePath, "API", "Data", "images");
+            return targetFolderPath;
+        }
 
         public void buildPdf(List<Module> modules)
         {
-            string pngFolderPath = @"C:\Users\praktiki1\Desktop\APIdump\PNGs"; //image sauce
-            string pdfPath = @"C:\Users\praktiki1\Desktop\APIdump\PDFs\report.pdf"; //pdf dump loc
+            string rootFolderPNG = GetTargetFolderPath(); //image sauce
+            string rootFolderPDF = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string pdfTargetPath = System.IO.Path.Combine(rootFolderPDF, "API", "Data", "Report");
+            if (!Directory.Exists(pdfTargetPath))
+            {
+                Directory.CreateDirectory(pdfTargetPath);
+            }
+            string pdfPath = System.IO.Path.Combine(pdfTargetPath, "report.pdf"); //pdf dump loc
             using (FileStream stream = new FileStream(pdfPath, FileMode.Create, FileAccess.Write))
             {
                 float parentWidth = modules[0].ParentWidth;
@@ -141,7 +152,7 @@ namespace ReportAppAPI.Services
                         string key = $"{module.Aggregate}_{module.Type}";
                         int fileCounter = fileCounters.ContainsKey(key) ? fileCounters[key] : 0;
 
-                        string imagePath = System.IO.Path.Combine(pngFolderPath, $"{module.Aggregate}_{module.Type}_chart{fileCounter}.png");
+                        string imagePath = System.IO.Path.Combine(rootFolderPNG, $"{module.Aggregate}_{module.Type}_chart{fileCounter}.png");
 
                         if (File.Exists(imagePath))
                         {
@@ -168,6 +179,11 @@ namespace ReportAppAPI.Services
                     document.Add(pdfImage);
                 }
                 document.Close();
+                string[] files = Directory.GetFiles(rootFolderPNG);
+                foreach (string file in files)
+                {
+                    File.Delete(file);
+                }
             }
         }
     }

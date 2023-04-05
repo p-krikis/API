@@ -10,6 +10,15 @@ namespace ReportAppAPI.Services
 {
     public class ChartService
     {
+
+        public static DirectoryInfo CreateDirectory(string dirPathPNG)
+        {
+            if (!Directory.Exists(dirPathPNG)) 
+            {
+                Directory.CreateDirectory(dirPathPNG);
+            }
+            return new DirectoryInfo(dirPathPNG);
+        }
         public void PlotChart(Module module)
         {
             int newWidth = (int)Math.Round((double)module.ParentWidth * ((double)module.Width / 100));
@@ -55,12 +64,19 @@ namespace ReportAppAPI.Services
             {
                 Console.WriteLine($"Unsupported Chart type: {module.Type}");
             }
+
+            string imagesPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+            string targetFolderPath = Path.Combine(imagesPath, "API", "Data", "images");
+            if (!Directory.Exists(targetFolderPath))
+            {
+                Directory.CreateDirectory(targetFolderPath);
+            }
             int fileCounter = 0;
-            if (File.Exists($"C:\\Users\\praktiki1\\Desktop\\APIdump\\PNGs\\{module.Aggregate}_{module.Type}_chart{fileCounter}.png"))
+            if (File.Exists(Path.Combine(targetFolderPath, $"{module.Aggregate}_{module.Type}_chart{fileCounter}.png")))
             {
                 fileCounter++;
             }
-            plt.SaveFig($"C:\\Users\\praktiki1\\Desktop\\APIdump\\PNGs\\{module.Aggregate}_{module.Type}_chart{fileCounter}.png");
+            plt.SaveFig(Path.Combine(targetFolderPath, $"{module.Aggregate}_{module.Type}_chart{fileCounter}.png"));
         }
         public string GetChartTitle(Module module)
         {
@@ -153,8 +169,8 @@ namespace ReportAppAPI.Services
         }
         private void PlotScatterChart(Module module, Plot plt)
         {
-            //string chartTitle = GetChartTitle(module);
-            //plt.Title(chartTitle, size: 11);
+            string chartTitle = GetChartTitle(module);
+            plt.Title(chartTitle, size: 11);
             foreach (var dataset in module.Datasets)
             {
                 var color = GetColorFromJToken(dataset.BorderColor);
