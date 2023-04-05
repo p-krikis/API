@@ -6,6 +6,7 @@ using iText.Layout.Element;
 using iText.Layout.Properties;
 using ReportAppAPI.Models;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ReportAppAPI.Services
 {
@@ -130,12 +131,10 @@ namespace ReportAppAPI.Services
                     else if (module.Type == "table")
                     {
                         CreateTable(module, document);
-                        //document.Add(new AreaBreak());
                     }
                     else if (module.Type == "panel")
                     {
                         CreatePanelTable(module, document);
-                        //document.Add(new AreaBreak());
                     }
                     else
                     {
@@ -144,16 +143,11 @@ namespace ReportAppAPI.Services
 
                         string imagePath = System.IO.Path.Combine(pngFolderPath, $"{module.Aggregate}_{module.Type}_chart{fileCounter}.png");
 
-                        // Loop through all the files with the same prefix until you find one that doesn't exist
-                        while (File.Exists(imagePath))
+                        if (File.Exists(imagePath))
                         {
-                            float x = module.Left;
-                            float y = module.Top;
                             ImageData imageData = ImageDataFactory.Create(imagePath);
-                            images.Add(new Tuple<ImageData, float, float>(imageData, x, y));
-
+                            images.Add(new Tuple<ImageData, float, float>(imageData, module.Left, module.Top));
                             fileCounter++;
-                            imagePath = System.IO.Path.Combine(pngFolderPath, $"{module.Aggregate}_{module.Type}_chart{fileCounter}.png");
                         }
                         if (fileCounters.ContainsKey(key))
                         {

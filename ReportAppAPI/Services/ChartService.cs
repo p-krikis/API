@@ -47,6 +47,10 @@ namespace ReportAppAPI.Services
             {
                 return;
             }
+            else if (string.IsNullOrEmpty(module.Type))
+            {
+                return;
+            }
             else
             {
                 Console.WriteLine($"Unsupported Chart type: {module.Type}");
@@ -149,8 +153,8 @@ namespace ReportAppAPI.Services
         }
         private void PlotScatterChart(Module module, Plot plt)
         {
-            string chartTitle = GetChartTitle(module);
-            plt.Title(chartTitle, size: 11);
+            //string chartTitle = GetChartTitle(module);
+            //plt.Title(chartTitle, size: 11);
             foreach (var dataset in module.Datasets)
             {
                 var color = GetColorFromJToken(dataset.BorderColor);
