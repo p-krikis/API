@@ -91,11 +91,12 @@ namespace ReportAppAPI.Services
         }
         private void PlotLineChart(Module module, Plot plt)
         {
-            double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture).ToOADate()).ToArray();
+            double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "dd/MM/yyyy, HH:mm", CultureInfo.InvariantCulture).ToOADate()).ToArray();
+            string[] labels = module.Labels.ToArray();
             double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
             
             string chartTitle = GetChartTitle(module);
-            
+            Console.Write(xAxisData);
             foreach (var dataset in module.Datasets)
             {
                 var colorLine = GetColorFromJToken(dataset.BorderColor);
@@ -106,8 +107,9 @@ namespace ReportAppAPI.Services
                     plt.AddText(dataset.Data[i].ToString(), x: xAxisData[i] - 0.3, y: ((double)dataset.Data[i]) - 0.4, color: System.Drawing.Color.Black, size: 9);
                 }
             }
+            
             plt.Title(chartTitle, size: 11);
-            plt.XAxis.TickLabelFormat("dd/MM/yyyy", dateTimeFormat: true);
+            plt.XTicks(xAxisData, labels);
             var legend = plt.Legend(location: Alignment.UpperRight);
             legend.Orientation = Orientation.Horizontal;
             legend.FontSize = 9;
@@ -116,7 +118,7 @@ namespace ReportAppAPI.Services
         private void PlotBarChart(Module module, Plot plt)
         {
             string chartTitle = GetChartTitle(module);
-            string[] labels = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "MM/dd/yyyy", CultureInfo.InvariantCulture)).Select(date => date.ToString("dd/MM/yyyy")).ToArray();
+            string[] labels = module.Labels.ToArray();
             foreach (var dataset in module.Datasets)
             {
                 double[] values = dataset.Data.Select(x => x.Value<double>()).ToArray();
@@ -170,6 +172,7 @@ namespace ReportAppAPI.Services
         private void PlotScatterChart(Module module, Plot plt)
         {
             string chartTitle = GetChartTitle(module);
+            string[] labels = module.Labels.ToArray();
             plt.Title(chartTitle, size: 11);
             foreach (var dataset in module.Datasets)
             {
@@ -184,13 +187,7 @@ namespace ReportAppAPI.Services
                 var legend = plt.Legend(location: Alignment.UpperRight);
                 legend.Orientation = Orientation.Horizontal;
                 legend.FontSize = 9;
-                plt.XAxis.TickLabelFormat("dd/MM/yyyy", dateTimeFormat: true);
-                var formattedLabels = module.Labels.Select(dateStr =>
-                {
-                    DateTime date = DateTime.ParseExact(dateStr, "MM/dd/yyyy", CultureInfo.InvariantCulture);
-                    return date.ToString("dd/MM/yyyy");
-                }).ToArray();
-                plt.XTicks(xValues, formattedLabels);
+                plt.XTicks(xValues, labels);
                 plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 9);
             }
         }
