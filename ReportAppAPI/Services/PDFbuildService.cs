@@ -171,12 +171,22 @@ namespace ReportAppAPI.Services
                     }
                 }
                 document.Add(new AreaBreak());
+                int lastPageNumber = pdfDocument.GetNumberOfPages();
                 foreach (var image in images)
                 {
-                    int lastPageNumber = pdfDocument.GetNumberOfPages(); //used to always print images to last page
-                    Image pdfImage = new(image.Item1);
-                    pdfImage.SetFixedPosition(image.Item2, pdfDocument.GetPage(lastPageNumber).GetPageSize().GetHeight() - image.Item3 - pdfImage.GetImageHeight());
-                    document.Add(pdfImage);
+                    
+                    if (lastPageNumber == 0)
+                    {
+                        Image pdfImage = new(image.Item1);
+                        pdfImage.SetFixedPosition(image.Item2, pdfDocument.GetPage(1).GetPageSize().GetHeight() - image.Item3 - pdfImage.GetImageHeight());
+                        document.Add(pdfImage);
+                    }
+                    else
+                    {
+                        Image pdfImage = new(image.Item1);
+                        pdfImage.SetFixedPosition(image.Item2, pdfDocument.GetPage(lastPageNumber).GetPageSize().GetHeight() - image.Item3 - pdfImage.GetImageHeight());
+                        document.Add(pdfImage);
+                    }
                 }
                 document.Close();
                 string[] files = Directory.GetFiles(rootFolderPNG);
