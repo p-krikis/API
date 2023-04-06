@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography.X509Certificates;
-
-namespace ReportAppAPI.Models
+﻿namespace ReportAppAPI.Models
 {
     public class Module
     {

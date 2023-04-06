@@ -107,7 +107,6 @@ namespace ReportAppAPI.Services
                     plt.AddText(dataset.Data[i].ToString(), x: xAxisData[i] - 0.3, y: ((double)dataset.Data[i]) - 0.4, color: System.Drawing.Color.Black, size: 9);
                 }
             }
-            
             plt.Title(chartTitle, size: 11);
             plt.XTicks(xAxisData, labels);
             var legend = plt.Legend(location: Alignment.UpperRight);
