@@ -113,17 +113,11 @@ namespace ReportAppAPI.Services
             return targetFolderPath;
         }
 
-        public void buildPdf(List<Module> modules)
+        public byte[] buildPdf(List<Module> modules)
         {
             string rootFolderPNG = GetTargetFolderPath(); //image sauce
-            string rootFolderPDF = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-            string pdfTargetPath = System.IO.Path.Combine(rootFolderPDF, "API", "Data", "Report");
-            if (!Directory.Exists(pdfTargetPath))
-            {
-                Directory.CreateDirectory(pdfTargetPath);
-            }
-            string pdfPath = System.IO.Path.Combine(pdfTargetPath, "report.pdf"); //pdf dump loc
-            using (FileStream stream = new FileStream(pdfPath, FileMode.Create, FileAccess.Write))
+            
+            using (MemoryStream stream = new MemoryStream())
             {
                 float parentWidth = modules[0].ParentWidth;
                 float parentHeight = modules[0].ParentHeight;
@@ -194,6 +188,7 @@ namespace ReportAppAPI.Services
                 {
                     File.Delete(file);
                 }
+                return stream.ToArray();
             }
         }
     }
