@@ -3,7 +3,7 @@ using ReportAppAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//builder.WebHost.UseKestrel(options => options.Configure(builder.Configuration.GetSection("Kestrel")));
+builder.WebHost.UseKestrel(options => options.Configure(builder.Configuration.GetSection("Kestrel")));
 
 builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddEndpointsApiExplorer();
