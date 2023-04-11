@@ -5,5 +5,6 @@
         public int Id { get; set; }
         public string Name { get; set; }
         public string jsonString { get; set; }
+        public DateTime timeCreated { get; set; }
     }
 }
