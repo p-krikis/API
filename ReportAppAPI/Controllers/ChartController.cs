@@ -50,6 +50,19 @@ namespace ReportAppAPI.Controllers
             await _jsonDbService.DeleteJsonFileByIdAsync(id);
             return Ok("Deleted");
         }
+        //[HttpPost("emailReport")]
+        //public async Task<IActionResult> SendReport([FromBody] EmailStuff email)
+        //{
+        //    var jsonString = await _jsonDbService.GetJsonFileByIdAsync(email.Id);
+        //    List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
+        //    foreach (var module in modules)
+        //    {
+        //        _chartService.PlotChart(module);
+        //    }
+        //    byte[] pdf = _pdfbuildService.buildPdf(modules);
+        //    _pdfbuildService.SendEmail(email, pdf);
+        //    return Ok("Email sent");
+        //}])
     }
 }
 
@@ -57,3 +70,4 @@ namespace ReportAppAPI.Controllers
 //https://localhost:7095/api/chart/getAllJSON
 //https://localhost:7095/api/chart/getSingleJSON/{id}
 //https://localhost:7095/api/chart/deleteSingleJSON/{id}
+//https://localhost:7095/api/chart/emailReport
