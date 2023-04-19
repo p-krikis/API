@@ -99,7 +99,6 @@ namespace ReportAppAPI.Services
             Console.Write(xAxisData);
             foreach (var dataset in module.Datasets)
             {
-                dataset.id
                 var colorLine = GetColorFromJToken(dataset.BorderColor);
                 var backgroundColor = GetColorFromJToken(dataset.BackgroundColor);
                 plt.AddScatter(xAxisData, dataset.Data.Select(x => x.Value<double>()).ToArray(), markerSize: 5, lineWidth: 1, label: dataset.Label, color: colorLine);

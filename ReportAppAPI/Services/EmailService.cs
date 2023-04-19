@@ -29,8 +29,8 @@ namespace ReportAppAPI.Services
             if (loginResponse.IsSuccessStatusCode)
             {
                 var loginResponseContent = await loginResponse.Content.ReadAsStringAsync();
-                dynamic tokenResponse = JsonConvert.SerializeObject(loginResponseContent.ToString());
-                string authToken = tokenResponse.Substring(21, 1018);
+                dynamic tokenResponse = JsonConvert.DeserializeObject<TokenResponse>(loginResponseContent);
+                string authToken = tokenResponse.Access_token;
                 return authToken;
             }
             else
