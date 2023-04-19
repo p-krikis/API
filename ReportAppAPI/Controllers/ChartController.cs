@@ -13,11 +13,12 @@ namespace ReportAppAPI.Controllers
         private readonly PDFbuildService _pdfbuildService;
         private readonly JsonDbService _jsonDbService;
         private readonly EmailService _emailService;
-        public ChartController(JsonDbService jsonDbService)
+        public ChartController(JsonDbService jsonDbService, EmailService emailService)
         {
             _chartService = new ChartService();
             _pdfbuildService = new PDFbuildService();
             _jsonDbService = jsonDbService;
+            _emailService = emailService;
         }
         [HttpPost("saveJSON")]
         public async Task<IActionResult> SaveJSON([FromBody] List<Module> modules)
@@ -54,24 +55,9 @@ namespace ReportAppAPI.Controllers
         [HttpGet("test1")]
         public async Task<IActionResult> GetToken()
         {
-            var loginToken = await _emailService.PostCreds();
-            return Ok(loginToken);
+            var authToken = await _emailService.PostCreds();
+            return Ok(authToken);
         }
-
-
-        //[HttpPost("emailReport")]
-        //public async Task<IActionResult> SendReport([FromBody] EmailStuff email)
-        //{
-        //    var jsonString = await _jsonDbService.GetJsonFileByIdAsync(email.Id);
-        //    List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
-        //    foreach (var module in modules)
-        //    {
-        //        _chartService.PlotChart(module);
-        //    }
-        //    byte[] pdf = _pdfbuildService.buildPdf(modules);
-        //    _pdfbuildService.SendEmail(email, pdf);
-        //    return Ok("Email sent");
-        //}])
     }
 }
 
@@ -80,3 +66,17 @@ namespace ReportAppAPI.Controllers
 //https://localhost:7095/api/chart/getSingleJSON/{id}
 //https://localhost:7095/api/chart/deleteSingleJSON/{id}
 //https://localhost:7095/api/chart/emailReport
+
+//[HttpPost("emailReport")]
+//public async Task<IActionResult> SendReport([FromBody] EmailStuff email)
+//{
+//    var jsonString = await _jsonDbService.GetJsonFileByIdAsync(email.Id);
+//    List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
+//    foreach (var module in modules)
+//    {
+//        _chartService.PlotChart(module);
+//    }
+//    byte[] pdf = _pdfbuildService.buildPdf(modules);
+//    _pdfbuildService.SendEmail(email, pdf);
+//    return Ok("Email sent");
+//}])
