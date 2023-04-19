@@ -12,6 +12,7 @@ namespace ReportAppAPI.Controllers
         private readonly ChartService _chartService;
         private readonly PDFbuildService _pdfbuildService;
         private readonly JsonDbService _jsonDbService;
+        private readonly EmailService _emailService;
         public ChartController(JsonDbService jsonDbService)
         {
             _chartService = new ChartService();
@@ -50,6 +51,14 @@ namespace ReportAppAPI.Controllers
             await _jsonDbService.DeleteJsonFileByIdAsync(id);
             return Ok("Deleted");
         }
+        [HttpGet("test1")]
+        public async Task<IActionResult> GetToken()
+        {
+            var loginToken = await _emailService.PostCreds();
+            return Ok(loginToken);
+        }
+
+
         //[HttpPost("emailReport")]
         //public async Task<IActionResult> SendReport([FromBody] EmailStuff email)
         //{
