@@ -13,12 +13,12 @@ namespace ReportAppAPI.Controllers
         private readonly PDFbuildService _pdfbuildService;
         private readonly JsonDbService _jsonDbService;
         private readonly EmailService _emailService;
-        public ChartController(JsonDbService jsonDbService, EmailService emailService)
+        public ChartController(JsonDbService jsonDbService)
         {
             _chartService = new ChartService();
             _pdfbuildService = new PDFbuildService();
             _jsonDbService = jsonDbService;
-            _emailService = emailService;
+            _emailService = new EmailService();
         }
         [HttpPost("saveJSON")]
         public async Task<IActionResult> SaveJSON([FromBody] List<Module> modules)

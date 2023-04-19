@@ -7,12 +7,8 @@ namespace ReportAppAPI.Services
 {
     public class EmailService
     {
-        private readonly HttpClient _httpClient;
-        //private readonly PeriodicTimer _timer = new(TimeSpan.FromSeconds(15));
-        public EmailService(HttpClient httpClient)
-        {
-            _httpClient = httpClient;
-        }
+        private static readonly HttpClient _httpClient = new HttpClient();
+        //private readonly PeriodicTimer _timer = new(TimeSpan.FromSeconds(10));
 
         public async Task<string> PostCreds()
         {
