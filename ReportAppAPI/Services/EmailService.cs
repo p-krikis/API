@@ -214,11 +214,10 @@ namespace ReportAppAPI.Services
         private void PlotLineChart(Module module, Plot plt)
         {
             double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "dd/MM/yyyy, HH:mm", CultureInfo.InvariantCulture).ToOADate()).ToArray();
-            string[] labels = module.Labels.ToArray();
-            double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
+            //string[] labels = module.Labels.ToArray(); //labels testing
+            //double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
 
             string chartTitle = GetChartTitle(module);
-            Console.Write(xAxisData);
             foreach (var dataset in module.Datasets)
             {
                 var colorLine = GetColorFromJToken(dataset.BorderColor);
@@ -230,7 +229,7 @@ namespace ReportAppAPI.Services
                 }
             }
             plt.Title(chartTitle, size: 11);
-            plt.XTicks(xAxisData, labels);
+            plt.XTicks(xAxisData, module.Labels); //labels testing
             var legend = plt.Legend(location: Alignment.UpperRight);
             legend.Orientation = Orientation.Horizontal;
             legend.FontSize = 9;
@@ -239,7 +238,7 @@ namespace ReportAppAPI.Services
         private void PlotBarChart(Module module, Plot plt)
         {
             string chartTitle = GetChartTitle(module);
-            string[] labels = module.Labels.ToArray();
+            //string[] labels = module.Labels.ToArray(); //labels testing
             foreach (var dataset in module.Datasets)
             {
                 double[] values = dataset.Data.Select(x => x.Value<double>()).ToArray();
@@ -250,7 +249,7 @@ namespace ReportAppAPI.Services
                 bar.ShowValuesAboveBars = true;
             }
             plt.Title(chartTitle, size: 11);
-            plt.XTicks(labels);
+            plt.XTicks(module.Labels); //labels testing
             plt.SetAxisLimits(yMin: 0);
             plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 9);
         }
