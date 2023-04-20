@@ -216,20 +216,23 @@ namespace ReportAppAPI.Services
             double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "dd/MM/yyyy, HH:mm", CultureInfo.InvariantCulture).ToOADate()).ToArray();
             //string[] labels = module.Labels.ToArray(); //labels testing
             //double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
+            var (dateTimes, actualValues) = PostParamValues().Result; //new stuff?
+            string[] dateTimeArray = dateTimes.Select(x => x.ToString("dd/MM/yyyy, HH:mm")).ToArray();
+            double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
 
             string chartTitle = GetChartTitle(module);
             foreach (var dataset in module.Datasets)
             {
                 var colorLine = GetColorFromJToken(dataset.BorderColor);
                 var backgroundColor = GetColorFromJToken(dataset.BackgroundColor);
-                plt.AddScatter(xAxisData, dataset.Data.Select(x => x.Value<double>()).ToArray(), markerSize: 5, lineWidth: 1, label: dataset.Label, color: colorLine);
+                plt.AddScatter(xAxisData, actualValuesArray, markerSize: 5, lineWidth: 1, label: dataset.Label, color: colorLine); //changed values to actualValuesArray, using new system
                 for (int i = 0; i < xAxisData.Length; i++)
                 {
                     plt.AddText(dataset.Data[i].ToString(), x: xAxisData[i] - 0.3, y: ((double)dataset.Data[i]) - 0.4, color: System.Drawing.Color.Black, size: 9);
                 }
             }
             plt.Title(chartTitle, size: 11);
-            plt.XTicks(xAxisData, module.Labels); //labels testing
+            plt.XTicks(xAxisData, dateTimeArray); //labels testing ***need to fix this***
             var legend = plt.Legend(location: Alignment.UpperRight);
             legend.Orientation = Orientation.Horizontal;
             legend.FontSize = 9;
@@ -359,43 +362,3 @@ namespace ReportAppAPI.Services
         }
     }
 }
-//    //timer every 5 hours executes, to be switched by scheduler
-//    private readonly PeriodicTimer _timer = new(TimeSpan.FromSeconds(10));
-//    //private readonly PeriodicTimer tokenRefreshTimer = new(TimeSpan.FromHours(7.5));
-//    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-//    {
-//        while (await _timer.WaitForNextTickAsync(stoppingToken) && !stoppingToken.IsCancellationRequested)
-//        {
-//            var authToken = await PostCreds();
-//            if (authToken != null)
-//            {
-//                await GetJsonFile(authToken);
-//                authToken = null;
-//            }
-//        }
-//    }
-//    static async Task GetJsonFile(string authToken)
-//    {
-//        var httpClient = new HttpClient();
-//        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-//        var response = await httpClient.GetAsync("https://api.dei.prismasense.com/energy/v1/devices");
-//
-//        if (response.IsSuccessStatusCode)
-//        {
-//            var content = await response.Content.ReadAsStringAsync();
-//            var json = JsonConvert.DeserializeObject(content);
-//            var filePath = Path.Combine("C:\\Users\\praktiki1\\Desktop\\JSONtest", "data.json");
-//
-//            using (var file = File.CreateText(filePath))
-//            {
-//                var serializer = new JsonSerializer();
-//                serializer.Serialize(file, json);
-//            }
-//        }
-//        else
-//        {
-//            Console.WriteLine($"Error: {response.StatusCode}");
-//        }
-//
-//    }
-//}
