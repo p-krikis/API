@@ -2,20 +2,20 @@
 {
     public class ParametersResponse
     {
-        public int? parameterId { get; set; }
-        public int? siteId { get; set; }
-        public string? name { get; set; }
+        public int? ParameterId { get; set; }
+        public int? SiteId { get; set; }
+        public string? Name { get; set; }
     }
     public class DeviceListResponse
     {
-        public string? deviceId { get; set; }
-        public string? name { get; set; }
-        public int? siteId { get; set; }
+        public string? DeviceId { get; set; }
+        public string? Name { get; set; }
+        public int? SiteId { get; set; }
     }
     public class ParametersValueResponse
     {
-        public int? parameterValId { get; set; }
-        public int? parameterId { get; set; }
+        public int? ParameterValId { get; set; }
+        public int? ParameterId { get; set; }
         public object? Value { get; set; }
         public DateTime? Datetime { get; set; }
     }

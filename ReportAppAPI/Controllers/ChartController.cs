@@ -55,8 +55,8 @@ namespace ReportAppAPI.Controllers
         [HttpGet("test1")]
         public async Task<IActionResult> GetToken()
         {
-            var authToken = await _emailService.PostCreds();
-            return Ok(authToken);
+            var list = await _emailService.GetDeviceList();
+            return Ok(list);
         }
     }
 }
