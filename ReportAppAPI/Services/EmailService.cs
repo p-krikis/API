@@ -7,7 +7,6 @@ using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
-using static System.Net.WebRequestMethods;
 
 namespace ReportAppAPI.Services
 {
@@ -93,7 +92,7 @@ namespace ReportAppAPI.Services
                 return null;
             }
         }
-        public async Task<(List<DateTime> dateTimes, List<double> actualValues)> PostParamValues()
+        public async Task<(List<DateTime> dateTimes, List<double> actualValues)> PostParamValues(Module module)
         {
             var authToken = await PostCreds();
             var startDate = DateTime.UtcNow.AddDays(-7).ToString("O");
@@ -101,7 +100,7 @@ namespace ReportAppAPI.Services
             var resolution = 360; //to be replaced by method for api endpoint
             List<double> actualValues = new List<double>();
             List<DateTime> dateTimes = new List<DateTime>();
-            var url = "https://api.dei.prismasense.com/energy/v1/parameters/10/1641/values/"; //to be replaced by  $"https://api.dei.prismasense.com/energy/v1/parameters/{module.Device[0].Site}/{module.Dataset[0].paramId}/values/"
+            var url = $"https://api.dei.prismasense.com/energy/v1/parameters/{module.Device.Site}/{module.Datasets[0].paramId}/values/"; //to be replaced by  $"https://api.dei.prismasense.com/energy/v1/parameters/{module.Device[0].Site}/{module.Dataset[0].paramId}/values/"
             var payload = new
             {
                 from = startDate,
@@ -138,9 +137,12 @@ namespace ReportAppAPI.Services
 
 
 
+        /// <summary>
+        /// absolute crackhead energy here, this shit right here wack af
+        /// </summary>
+        /// <param name="module"></param>
 
 
-        
         public void PlotWeeklyChart(Module module)
         {
             int newWidth = (int)Math.Round((double)module.ParentWidth * ((double)module.Width / 100));
@@ -214,15 +216,15 @@ namespace ReportAppAPI.Services
         private void PlotLineChart(Module module, Plot plt)
         {
             double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "dd/MM/yyyy, HH:mm", CultureInfo.InvariantCulture).ToOADate()).ToArray();
-            //string[] labels = module.Labels.ToArray(); //labels testing
-            //double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
-            var (dateTimes, actualValues) = PostParamValues().Result; //new stuff?
+
+            var dateTimes = PostParamValues(module).Result.dateTimes;
             string[] dateTimeArray = dateTimes.Select(x => x.ToString("dd/MM/yyyy, HH:mm")).ToArray();
-            double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
 
             string chartTitle = GetChartTitle(module);
             foreach (var dataset in module.Datasets)
             {
+                var actualValues = PostParamValues(module).Result.actualValues;
+                double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
                 var colorLine = GetColorFromJToken(dataset.BorderColor);
                 var backgroundColor = GetColorFromJToken(dataset.BackgroundColor);
                 plt.AddScatter(xAxisData, actualValuesArray, markerSize: 5, lineWidth: 1, label: dataset.Label, color: colorLine); //changed values to actualValuesArray, using new system
