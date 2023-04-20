@@ -76,7 +76,7 @@ namespace ReportAppAPI.Services
             List<string> deviceIdList = await GetDeviceList();
             var authToken = await PostCreds();
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-            var paramsListResponse = await _httpClient.GetAsync($"https://api.dei.prismasense.com/energy/v1/parameters/device/{deviceIdList.FirstOrDefault()}");
+            var paramsListResponse = await _httpClient.GetAsync($"https://api.dei.prismasense.com/energy/v1/parameters/device/{deviceIdList.FirstOrDefault()}"); //.Find(module.Device[0].DeviceId)
             if (paramsListResponse.IsSuccessStatusCode)
             {
                 var paramsListResponseContent = await paramsListResponse.Content.ReadAsStringAsync();
@@ -101,7 +101,7 @@ namespace ReportAppAPI.Services
             var resolution = 360; //to be replaced by method for api endpoint
             List<double> actualValues = new List<double>();
             List<DateTime> dateTimes = new List<DateTime>();
-            var url = "https://api.dei.prismasense.com/energy/v1/parameters/10/1641/values/";
+            var url = "https://api.dei.prismasense.com/energy/v1/parameters/10/1641/values/"; //to be replaced by  $"https://api.dei.prismasense.com/energy/v1/parameters/{module.Device[0].Site}/{module.Dataset[0].paramId}/values/"
             var payload = new
             {
                 from = startDate,
@@ -140,14 +140,7 @@ namespace ReportAppAPI.Services
 
 
 
-        public static DirectoryInfo CreateDirectory(string dirPathWeeklyPNG)
-        {
-            if (!Directory.Exists(dirPathWeeklyPNG))
-            {
-                Directory.CreateDirectory(dirPathWeeklyPNG);
-            }
-            return new DirectoryInfo(dirPathWeeklyPNG);
-        }
+        
         public void PlotWeeklyChart(Module module)
         {
             int newWidth = (int)Math.Round((double)module.ParentWidth * ((double)module.Width / 100));

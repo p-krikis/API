@@ -10,15 +10,6 @@ namespace ReportAppAPI.Services
 {
     public class ChartService
     {
-
-        public static DirectoryInfo CreateDirectory(string dirPathPNG)
-        {
-            if (!Directory.Exists(dirPathPNG)) 
-            {
-                Directory.CreateDirectory(dirPathPNG);
-            }
-            return new DirectoryInfo(dirPathPNG);
-        }
         public void PlotChart(Module module)
         {
             int newWidth = (int)Math.Round((double)module.ParentWidth * ((double)module.Width / 100));
