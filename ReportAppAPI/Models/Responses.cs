@@ -15,7 +15,7 @@
     public class ParametersValueResponse
     {
         public int? ParameterValId { get; set; }
-        public int? ParameterId { get; set; }
+        public int? ParameterIdValue { get; set; }
         public object? Value { get; set; }
         public DateTime? Datetime { get; set; }
     }

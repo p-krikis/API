@@ -45,10 +45,8 @@ namespace ReportAppAPI.Services
         }
         public async Task<List<string>> GetDeviceList()
         {
-            List<string> deviceInfoList = new List<string>();
-            List<string> deviceId = new List<string>();
-            List<string> Name = new List<string>();
-            List<int> SiteId = new List<int>();
+            List<string> deviceIdList = new List<string>();
+            List<int> siteIdList = new List<int>();
             var authToken = await PostCreds();
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
             var deviceListResponse = await _httpClient.GetAsync("https://api.dei.prismasense.com/energy/v1/devices");
@@ -58,15 +56,38 @@ namespace ReportAppAPI.Services
                 dynamic deviceList = JsonConvert.DeserializeObject<List<DeviceListResponse>>(deviceListResponseContent);
                 foreach (var device in deviceList)
                 {
-                    
-                    deviceInfoList.Add(deviceInfo);
+                    siteIdList.Add(device.SiteId);
+                    deviceIdList.Add(device.DeviceId);
                 }
 
-                return deviceInfoList;
+                return deviceIdList;
             }
             else
             {
                 Console.WriteLine("Failed with status code: {0}", deviceListResponse.StatusCode);
+                return null;
+            }
+        }
+        public async Task<List<string>> GetParamsByDevice()
+        {
+            List<string> paramsList = new List<string>();
+            List<string> deviceIdList = await GetDeviceList();
+            var authToken = await PostCreds();
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+            var paramsListResponse = await _httpClient.GetAsync($"https://api.dei.prismasense.com/energy/v1/parameters/device/{deviceIdList.FirstOrDefault()}");
+            if (paramsListResponse.IsSuccessStatusCode)
+            {
+                var paramsListResponseContent = await paramsListResponse.Content.ReadAsStringAsync();
+                dynamic paramsListResponseContentJson = JsonConvert.DeserializeObject<List<ParametersResponse>>(paramsListResponseContent);
+                foreach (var param in paramsListResponseContentJson)
+                {
+                    var paramsInfo = string.Format("{0}, {1}", param.ParameterId, param.Name);
+                    paramsList.Add(paramsInfo);
+                }
+                return paramsList;
+            }
+            else
+            {
                 return null;
             }
         }
