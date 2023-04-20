@@ -14,9 +14,9 @@
     }
     public class ParametersValueResponse
     {
-        public int? ParameterValId { get; set; }
+        public int? ParameterValid { get; set; }
         public int? ParameterIdValue { get; set; }
-        public object? Value { get; set; }
+        public int? Value { get; set; }
         public DateTime? Datetime { get; set; }
     }
     public class TokenResponse

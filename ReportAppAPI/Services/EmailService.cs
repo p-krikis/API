@@ -6,6 +6,7 @@ using ScottPlot;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text.RegularExpressions;
+using static System.Net.WebRequestMethods;
 
 namespace ReportAppAPI.Services
 {
@@ -91,6 +92,42 @@ namespace ReportAppAPI.Services
                 return null;
             }
         }
+        public async Task<List<int>> PostParamValues()
+        {
+            var authToken = await PostCreds();
+            var startDate = DateTime.UtcNow.AddDays(-7).ToString("O");
+            var endDate = DateTime.UtcNow.ToString("O");
+            var resolution = 360; //to be replaced by method for api endpoint
+            List<int> actualValue = new List<int>();
+            var url = "https://api.dei.prismasense.com/energy/v1/parameters/10/1641/values/";
+            var content = new FormUrlEncodedContent(new Dictionary<string, string>
+            {
+                { "from", startDate },
+                { "to", endDate },
+                { "resolution", resolution.ToString() }
+            });
+            var contentType = new MediaTypeWithQualityHeaderValue("application/json");
+            _httpClient.DefaultRequestHeaders.Accept.Add(contentType);
+            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
+            var paramValuesResponse = await _httpClient.PostAsync(url, content);
+            if (paramValuesResponse.IsSuccessStatusCode)
+            {
+                var paramValuesResponseContent = await paramValuesResponse.Content.ReadAsStringAsync();
+                dynamic paramValuesList = JsonConvert.DeserializeObject<List<ParametersValueResponse>>(paramValuesResponseContent);
+                foreach (var paramValue in paramValuesList)
+                {
+                    if (paramValue.Value != null)
+                    {
+                        actualValue.Add(paramValue.Value);
+                    }
+                }
+                return actualValue;
+            }
+            else
+            {
+                return null;
+            }
+        }
 
 
 
@@ -159,7 +196,7 @@ namespace ReportAppAPI.Services
                 Directory.CreateDirectory(targetFolderPath);
             }
             int fileCounter = 0;
-            if (File.Exists(Path.Combine(targetFolderPath, $"{module.Aggregate}_{module.Type}_chart{fileCounter}.png")))
+            if (System.IO.File.Exists(Path.Combine(targetFolderPath, $"{module.Aggregate}_{module.Type}_chart{fileCounter}.png")))
             {
                 fileCounter++;
             }
