@@ -16,7 +16,7 @@
     {
         public int? ParameterValid { get; set; }
         public int? ParameterIdValue { get; set; }
-        public int? Value { get; set; }
+        public double? Value { get; set; }
         public DateTime? Datetime { get; set; }
     }
     public class TokenResponse

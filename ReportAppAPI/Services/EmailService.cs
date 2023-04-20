@@ -5,6 +5,7 @@ using ReportAppAPI.Models;
 using ScottPlot;
 using System.Globalization;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Text.RegularExpressions;
 using static System.Net.WebRequestMethods;
 
@@ -92,20 +93,24 @@ namespace ReportAppAPI.Services
                 return null;
             }
         }
-        public async Task<List<int>> PostParamValues()
+        public async Task<List<dynamic>> PostParamValues()
         {
             var authToken = await PostCreds();
             var startDate = DateTime.UtcNow.AddDays(-7).ToString("O");
             var endDate = DateTime.UtcNow.ToString("O");
             var resolution = 360; //to be replaced by method for api endpoint
-            List<int> actualValue = new List<int>();
+            List<double> actualValue = new List<double>();
+            List<DateTime> dateTimes = new List<DateTime>();
+            List<dynamic> valueInfoList = new List<dynamic>();
             var url = "https://api.dei.prismasense.com/energy/v1/parameters/10/1641/values/";
-            var content = new FormUrlEncodedContent(new Dictionary<string, string>
+            var payload = new
             {
-                { "from", startDate },
-                { "to", endDate },
-                { "resolution", resolution.ToString() }
-            });
+                from = startDate,
+                to = endDate,
+                resolution = resolution
+            };
+            var jsonPayload = JsonConvert.SerializeObject(payload);
+            var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
             var contentType = new MediaTypeWithQualityHeaderValue("application/json");
             _httpClient.DefaultRequestHeaders.Accept.Add(contentType);
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
@@ -118,10 +123,12 @@ namespace ReportAppAPI.Services
                 {
                     if (paramValue.Value != null)
                     {
-                        actualValue.Add(paramValue.Value);
+                        string valueInfo = string.Format("{0}, {1}", paramValue.Datetime, paramValue.Value);
+                        //dateTimes.Add(paramValue.Datetime);
+                        valueInfoList.Add(valueInfo);
                     }
                 }
-                return actualValue;
+                return valueInfoList;
             }
             else
             {
