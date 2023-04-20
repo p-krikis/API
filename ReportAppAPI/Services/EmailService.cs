@@ -93,15 +93,14 @@ namespace ReportAppAPI.Services
                 return null;
             }
         }
-        public async Task<List<dynamic>> PostParamValues()
+        public async Task<(List<DateTime> dateTimes, List<double> actualValues)> PostParamValues()
         {
             var authToken = await PostCreds();
             var startDate = DateTime.UtcNow.AddDays(-7).ToString("O");
             var endDate = DateTime.UtcNow.ToString("O");
             var resolution = 360; //to be replaced by method for api endpoint
-            List<double> actualValue = new List<double>();
+            List<double> actualValues = new List<double>();
             List<DateTime> dateTimes = new List<DateTime>();
-            List<dynamic> valueInfoList = new List<dynamic>();
             var url = "https://api.dei.prismasense.com/energy/v1/parameters/10/1641/values/";
             var payload = new
             {
@@ -123,16 +122,15 @@ namespace ReportAppAPI.Services
                 {
                     if (paramValue.Value != null)
                     {
-                        string valueInfo = string.Format("{0}, {1}", paramValue.Datetime, paramValue.Value);
-                        //dateTimes.Add(paramValue.Datetime);
-                        valueInfoList.Add(valueInfo);
+                        actualValues.Add(paramValue.Value);
+                        dateTimes.Add(paramValue.Datetime);
                     }
                 }
-                return valueInfoList;
+                return (dateTimes, actualValues);
             }
             else
             {
-                return null;
+                return (null, null);
             }
         }
 
