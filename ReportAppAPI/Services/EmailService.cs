@@ -137,10 +137,10 @@ namespace ReportAppAPI.Services
 
 
 
-        /// <summary>
-        /// absolute crackhead energy here, this shit right here wack af
-        /// </summary>
-        /// <param name="module"></param>
+        
+
+
+
 
 
         public void PlotWeeklyChart(Module module)

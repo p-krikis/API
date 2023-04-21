@@ -52,11 +52,17 @@ namespace ReportAppAPI.Controllers
             await _jsonDbService.DeleteJsonFileByIdAsync(id);
             return Ok("Deleted");
         }
-        [HttpGet("test1")]
-        public async Task<IActionResult> GetToken()
+        [HttpPost("emailReport/{id}")] //template
+        public async Task<IActionResult> SendWeeklyReport(int id)
         {
-            var list = await _emailService.PostParamValues();
-            return Ok(list);
+            var jsonString = await _jsonDbService.GetJsonFileByIdAsync(id);
+            List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
+            foreach (var module in modules)
+            {
+                _emailService.PlotWeeklyChart(module);
+            }
+            byte[] pdf = _pdfbuildService.buildPdf(modules);
+            return File(pdf, "application/pdf", "report.pdf");
         }
     }
 }
@@ -66,17 +72,3 @@ namespace ReportAppAPI.Controllers
 //https://localhost:7095/api/chart/getSingleJSON/{id}
 //https://localhost:7095/api/chart/deleteSingleJSON/{id}
 //https://localhost:7095/api/chart/emailReport
-
-//[HttpPost("emailReport")]
-//public async Task<IActionResult> SendReport([FromBody] EmailStuff email)
-//{
-//    var jsonString = await _jsonDbService.GetJsonFileByIdAsync(email.Id);
-//    List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
-//    foreach (var module in modules)
-//    {
-//        _chartService.PlotChart(module);
-//    }
-//    byte[] pdf = _pdfbuildService.buildPdf(modules);
-//    _pdfbuildService.SendEmail(email, pdf);
-//    return Ok("Email sent");
-//}])
