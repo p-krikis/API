@@ -26,7 +26,7 @@ namespace ReportAppAPI.Controllers
             string jsonString = JsonConvert.SerializeObject(modules);
             string name = "report";
             int id = await _jsonDbService.SaveFileAsync(name, jsonString);
-            return Ok(new { Id = id, Name = name });
+            return Ok(new { Id = id, Name = string.Format("{0}, {1}", name, id) });
         }
         [HttpGet("getAllJSON")]
         public async Task<IActionResult> GetAllJSON()
