@@ -48,12 +48,14 @@ namespace ReportAppAPI.Services
         public async Task<(List<DateTime> dateTimes, List<double> actualValues)> PostParamValues(Module module, int? paramId)
         {
             var authToken = await PostCredentials();
+            //var reportFrequency = AutoReport.ReportFrequency; //to be fixed
             var startDate = DateTime.UtcNow.AddDays(-1).ToString("O");
             var endDate = DateTime.UtcNow.ToString("O");
-            var resolution = 60; //to be replaced by method for api endpoint
+            //var resolution = AutoReport.Resolution; //to be fixed
+            var resolution = 720; //in minutes
             List<double> actualValues = new List<double>();
             List<DateTime> dateTimes = new List<DateTime>();
-            var url = $"https://api.dei.prismasense.com/energy/v1/parameters/{module.Device.Site}/{paramId}/values/"; //to be replaced by  $"https://api.dei.prismasense.com/energy/v1/parameters/{module.Device[0].Site}/{module.Dataset[0].paramId}/values/"
+            var url = $"https://api.dei.prismasense.com/energy/v1/parameters/{module.Device.Site}/{paramId}/values/";
             var payload = new
             {
                 from = startDate,
@@ -155,10 +157,9 @@ namespace ReportAppAPI.Services
             {
                 return string.Format("{1}, {0}", module.Device.Name, module.Aggregate);
             }
-        }
+        } //no need to change
         private void PlotLineChart(Module module, Plot plt)
         {
-            //double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "dd/MM/yyyy, HH:mm", CultureInfo.InvariantCulture).ToOADate()).ToArray();
             var paramId = module.Datasets[0].ParameterId;
             List<DateTime> dateTimes = PostParamValues(module, paramId).Result.dateTimes;
             string[] dateTimeArray = dateTimes.Select(x => x.ToString("dd/MM/yyyy, HH:mm")).ToArray();
@@ -183,7 +184,7 @@ namespace ReportAppAPI.Services
             legend.Orientation = Orientation.Horizontal;
             legend.FontSize = 9;
             plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 10);
-        }
+        } //seems OK
         private void PlotBarChart(Module module, Plot plt)
         {
             string chartTitle = GetChartTitle(module);
