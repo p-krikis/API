@@ -45,54 +45,6 @@ namespace ReportAppAPI.Services
                 return null;
             }
         }
-        public async Task<List<string>> GetDeviceList()
-        {
-            List<string> deviceIdList = new List<string>();
-            List<int> siteIdList = new List<int>();
-            var authToken = await PostCredentials();
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-            var deviceListResponse = await _httpClient.GetAsync("https://api.dei.prismasense.com/energy/v1/devices");
-            if (deviceListResponse.IsSuccessStatusCode)
-            {
-                var deviceListResponseContent = await deviceListResponse.Content.ReadAsStringAsync();
-                dynamic deviceList = JsonConvert.DeserializeObject<List<DeviceListResponse>>(deviceListResponseContent);
-                foreach (var device in deviceList)
-                {
-                    siteIdList.Add(device.SiteId);
-                    deviceIdList.Add(device.DeviceId);
-                }
-
-                return deviceIdList;
-            }
-            else
-            {
-                Console.WriteLine("Failed with status code: {0}", deviceListResponse.StatusCode);
-                return null;
-            }
-        } //useless?
-        public async Task<List<string>> GetParamsByDevice()
-        {
-            List<string> paramsList = new List<string>();
-            List<string> deviceIdList = await GetDeviceList();
-            var authToken = await PostCredentials();
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
-            var paramsListResponse = await _httpClient.GetAsync($"https://api.dei.prismasense.com/energy/v1/parameters/device/{deviceIdList.FirstOrDefault()}"); //.Find(module.Device[0].DeviceId)
-            if (paramsListResponse.IsSuccessStatusCode)
-            {
-                var paramsListResponseContent = await paramsListResponse.Content.ReadAsStringAsync();
-                dynamic paramsListResponseContentJson = JsonConvert.DeserializeObject<List<ParametersResponse>>(paramsListResponseContent);
-                foreach (var param in paramsListResponseContentJson)
-                {
-                    var paramsInfo = string.Format("{0}, {1}", param.ParameterId, param.Name);
-                    paramsList.Add(paramsInfo);
-                }
-                return paramsList;
-            }
-            else
-            {
-                return null;
-            }
-        } //useless?
         public async Task<(List<DateTime> dateTimes, List<double> actualValues)> PostParamValues(Module module, int? paramId)
         {
             var authToken = await PostCredentials();
@@ -133,16 +85,6 @@ namespace ReportAppAPI.Services
                 return (null, null);
             }
         }
-
-
-
-
-
-        
-
-
-
-
 
         public void PlotWeeklyChart(Module module)
         {
@@ -217,7 +159,7 @@ namespace ReportAppAPI.Services
         private void PlotLineChart(Module module, Plot plt)
         {
             //double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "dd/MM/yyyy, HH:mm", CultureInfo.InvariantCulture).ToOADate()).ToArray();
-             var paramId = module.Datasets[0].ParameterId;
+            var paramId = module.Datasets[0].ParameterId;
             List<DateTime> dateTimes = PostParamValues(module, paramId).Result.dateTimes;
             string[] dateTimeArray = dateTimes.Select(x => x.ToString("dd/MM/yyyy, HH:mm")).ToArray();
             double[] xAxisData = module.Labels.Take(dateTimeArray.Length).Select(dateString => DateTime.ParseExact(dateString, "dd/MM/yyyy, HH:mm", CultureInfo.InvariantCulture).ToOADate()).ToArray();
