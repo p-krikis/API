@@ -9,6 +9,6 @@ namespace ReportAppAPI.Models
         public List<ScatterData>? ScatterData { get; set; }
         public JToken? BorderColor { get; set; }
         public JToken? BackgroundColor { get; set;}
-        public int? paramId { get; set; }
+        public int? ParameterId { get; set; }
     }
 }

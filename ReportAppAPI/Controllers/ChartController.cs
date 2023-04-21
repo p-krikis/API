@@ -71,4 +71,4 @@ namespace ReportAppAPI.Controllers
 //https://localhost:7095/api/chart/getAllJSON
 //https://localhost:7095/api/chart/getSingleJSON/{id}
 //https://localhost:7095/api/chart/deleteSingleJSON/{id}
-//https://localhost:7095/api/chart/emailReport
+//https://localhost:7095/api/chart/emailReport/{id}

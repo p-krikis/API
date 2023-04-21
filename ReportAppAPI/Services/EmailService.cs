@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.Crypto.Parameters;
 using ReportAppAPI.Models;
 using ScottPlot;
 using System.Globalization;
@@ -15,7 +16,7 @@ namespace ReportAppAPI.Services
         private static readonly HttpClient _httpClient = new HttpClient();
         //private readonly PeriodicTimer _timer = new(TimeSpan.FromSeconds(10));
 
-        public async Task<string> PostCreds()
+        public async Task<string> PostCredentials()
         {
             var loginRequest = new HttpRequestMessage
             {
@@ -48,7 +49,7 @@ namespace ReportAppAPI.Services
         {
             List<string> deviceIdList = new List<string>();
             List<int> siteIdList = new List<int>();
-            var authToken = await PostCreds();
+            var authToken = await PostCredentials();
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
             var deviceListResponse = await _httpClient.GetAsync("https://api.dei.prismasense.com/energy/v1/devices");
             if (deviceListResponse.IsSuccessStatusCode)
@@ -68,12 +69,12 @@ namespace ReportAppAPI.Services
                 Console.WriteLine("Failed with status code: {0}", deviceListResponse.StatusCode);
                 return null;
             }
-        }
+        } //useless?
         public async Task<List<string>> GetParamsByDevice()
         {
             List<string> paramsList = new List<string>();
             List<string> deviceIdList = await GetDeviceList();
-            var authToken = await PostCreds();
+            var authToken = await PostCredentials();
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authToken);
             var paramsListResponse = await _httpClient.GetAsync($"https://api.dei.prismasense.com/energy/v1/parameters/device/{deviceIdList.FirstOrDefault()}"); //.Find(module.Device[0].DeviceId)
             if (paramsListResponse.IsSuccessStatusCode)
@@ -91,16 +92,16 @@ namespace ReportAppAPI.Services
             {
                 return null;
             }
-        }
-        public async Task<(List<DateTime> dateTimes, List<double> actualValues)> PostParamValues(Module module)
+        } //useless?
+        public async Task<(List<DateTime> dateTimes, List<double> actualValues)> PostParamValues(Module module, int? paramId)
         {
-            var authToken = await PostCreds();
-            var startDate = DateTime.UtcNow.AddDays(-7).ToString("O");
+            var authToken = await PostCredentials();
+            var startDate = DateTime.UtcNow.AddDays(-1).ToString("O");
             var endDate = DateTime.UtcNow.ToString("O");
-            var resolution = 360; //to be replaced by method for api endpoint
+            var resolution = 60; //to be replaced by method for api endpoint
             List<double> actualValues = new List<double>();
             List<DateTime> dateTimes = new List<DateTime>();
-            var url = $"https://api.dei.prismasense.com/energy/v1/parameters/{module.Device.Site}/{module.Datasets[0].paramId}/values/"; //to be replaced by  $"https://api.dei.prismasense.com/energy/v1/parameters/{module.Device[0].Site}/{module.Dataset[0].paramId}/values/"
+            var url = $"https://api.dei.prismasense.com/energy/v1/parameters/{module.Device.Site}/{paramId}/values/"; //to be replaced by  $"https://api.dei.prismasense.com/energy/v1/parameters/{module.Device[0].Site}/{module.Dataset[0].paramId}/values/"
             var payload = new
             {
                 from = startDate,
@@ -215,22 +216,23 @@ namespace ReportAppAPI.Services
         }
         private void PlotLineChart(Module module, Plot plt)
         {
-            double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "dd/MM/yyyy, HH:mm", CultureInfo.InvariantCulture).ToOADate()).ToArray();
-
-            var dateTimes = PostParamValues(module).Result.dateTimes;
+            //double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "dd/MM/yyyy, HH:mm", CultureInfo.InvariantCulture).ToOADate()).ToArray();
+             var paramId = module.Datasets[0].ParameterId;
+            List<DateTime> dateTimes = PostParamValues(module, paramId).Result.dateTimes;
             string[] dateTimeArray = dateTimes.Select(x => x.ToString("dd/MM/yyyy, HH:mm")).ToArray();
-
+            double[] xAxisData = module.Labels.Take(dateTimeArray.Length).Select(dateString => DateTime.ParseExact(dateString, "dd/MM/yyyy, HH:mm", CultureInfo.InvariantCulture).ToOADate()).ToArray();
             string chartTitle = GetChartTitle(module);
             foreach (var dataset in module.Datasets)
             {
-                var actualValues = PostParamValues(module).Result.actualValues;
+                paramId = dataset.ParameterId;
+                var actualValues = PostParamValues(module, paramId ).Result.actualValues;
                 double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
                 var colorLine = GetColorFromJToken(dataset.BorderColor);
                 var backgroundColor = GetColorFromJToken(dataset.BackgroundColor);
                 plt.AddScatter(xAxisData, actualValuesArray, markerSize: 5, lineWidth: 1, label: dataset.Label, color: colorLine); //changed values to actualValuesArray, using new system
                 for (int i = 0; i < xAxisData.Length; i++)
                 {
-                    plt.AddText(dataset.Data[i].ToString(), x: xAxisData[i] - 0.3, y: ((double)dataset.Data[i]) - 0.4, color: System.Drawing.Color.Black, size: 9);
+                    plt.AddText(actualValuesArray[i].ToString(), x: xAxisData[i] - 0.3, y: ((double)actualValuesArray[i]) - 0.4, color: System.Drawing.Color.Black, size: 9);
                 }
             }
             plt.Title(chartTitle, size: 11);
