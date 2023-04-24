@@ -14,18 +14,27 @@ namespace ReportAppAPI.Services
     public class EmailService
     {
         private static readonly HttpClient _httpClient = new HttpClient();
-        private readonly AutoReport _autoReport = new AutoReport();
+        //private readonly AutoReport _autoReport = new AutoReport();
 
-        public int GetResolution()
-        {
-            var res = _autoReport.Resolution;
-            return res;
-        }
-        public int GetReportFrequency()
-        {
-            var freq = _autoReport.ReportFrequency;
-            return freq;
-        }
+        //public int GetResolution()
+        //{
+        //    dynamic autoReport = JsonConvert.DeserializeObject<AutoReport>(autoReportInfo);
+        //    var res = autoReport.Resolution;
+        //    return res;
+        //}
+        //public int GetReportFrequency()
+        //{
+        //    dynamic autoReport = JsonConvert.DeserializeObject<AutoReport>(autoReportInfo);
+        //    var freq = autoReport.ReportFrequency;
+        //    return freq;
+        //}
+        //public Task<int res, int freq> GetAutoReportInfo(string autoReportInfo)
+        //{
+        //    dynamic autoReport = JsonConvert.DeserializeObject(autoReportInfo);
+        //    int res = autoReport.Resolution;
+        //    int freq = autoReport.ReportFrequency;
+        //    return (res, freq);
+        //}
         public async Task<string> PostCredentials()
         {
             var loginRequest = new HttpRequestMessage
