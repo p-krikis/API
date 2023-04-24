@@ -20,16 +20,16 @@ namespace ReportAppAPI.Services
         {
             if (string.IsNullOrEmpty(module.Aggregate))
             {
-                var paramId = module.Datasets[0].ParameterId; //new
-                var dateTimes = _emailService.PostParamValues(module, paramId).Result.dateTimes; //new
-                string[] dateTimesArray = dateTimes.Select(x => x.ToString("dd/MM/yyyy, HH:mm")).ToArray(); //new
+                var paramId = module.Datasets[0].ParameterId;
+                var dateTimes = _emailService.PostParamValues(module, paramId).Result.dateTimes;
+                string[] dateTimesArray = dateTimes.Select(x => x.ToString("dd/MM/yyyy, HH:mm")).ToArray();
                 var dataTable = new DataTable();
                 dataTable.Columns.Add($"{module.Device.Name}");
                 foreach (var dataset in module.Datasets)
                 {
-                    dataTable.Columns.Add(dataset.Label); //dataset.Label = param name
-                    var actualValues = _emailService.PostParamValues(module, dataset.ParameterId).Result.actualValues; //new
-                    double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray(); //new 
+                    dataTable.Columns.Add(dataset.Label);
+                    var actualValues = _emailService.PostParamValues(module, dataset.ParameterId).Result.actualValues;
+                    double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
                     for (int i = 0; i < dateTimesArray.Length; i++)
                     {
                         if (i >= dataTable.Rows.Count)
@@ -42,16 +42,6 @@ namespace ReportAppAPI.Services
                         dataTable.Rows[i][$"{dataset.Label}"] = actualValuesArray[i];
                     }
                 }
-                //for (int i = 0; i < module.Labels.Length; i++) //it runs for the number of labels
-                //{
-                //    var newRow = dataTable.NewRow();
-                //    newRow[$"{module.Device.Name}"] = module.Labels[i];
-                //    for (int j = 0; j < module.Datasets.Length; j++)
-                //    {
-                //        newRow[module.Datasets[j].Label] = module.Datasets[j].Data[i];
-                //    }
-                //    dataTable.Rows.Add(newRow); //(actualValuesArray)
-                //}
                 Table pdfTable = new Table(dataTable.Columns.Count);
                 pdfTable.SetWidth(UnitValue.CreatePercentValue(100));
                 foreach (DataColumn column in dataTable.Columns)
@@ -119,7 +109,7 @@ namespace ReportAppAPI.Services
             int numColumns = 1;
             Table panelTable = new Table(numColumns, true);
             panelTable.AddHeaderCell(new Cell().Add(new Paragraph("The ").Add(module.Aggregate).Add(" value of ").Add(module.Datasets[0].Label)).SetTextAlignment(TextAlignment.CENTER));
-            panelTable.AddCell(new Cell().Add(new Paragraph("The ").Add(module.Aggregate).Add(" value of ").Add(module.Datasets[0].Label).Add(" from ").Add(module.From).Add(" to ").Add(module.To).Add(" was ").Add(module.Datasets[0].Data[0].ToString())).SetTextAlignment(TextAlignment.CENTER));
+            panelTable.AddCell(new Cell().Add(new Paragraph($"The {module.Aggregate} value of {module.Datasets[0].Label} from {module.From} to {module.To} was {module.Datasets[0].Data[0]}")).SetTextAlignment(TextAlignment.CENTER));
             document.Add(panelTable);
             document.Add(new AreaBreak());
         }

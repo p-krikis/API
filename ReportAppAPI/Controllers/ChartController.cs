@@ -58,7 +58,6 @@ namespace ReportAppAPI.Controllers
         public async Task<IActionResult> SendWeeklyReport(int id)
         {
             var jsonString = await _jsonDbService.GetJsonFileByIdAsync(id);
-            //_emailService.PostCredentials();
             List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
             foreach (var module in modules)
             {

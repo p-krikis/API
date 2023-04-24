@@ -14,7 +14,18 @@ namespace ReportAppAPI.Services
     public class EmailService
     {
         private static readonly HttpClient _httpClient = new HttpClient();
+        private readonly AutoReport _autoReport = new AutoReport();
 
+        public int GetResolution()
+        {
+            var res = _autoReport.Resolution;
+            return res;
+        }
+        public int GetReportFrequency()
+        {
+            var freq = _autoReport.ReportFrequency;
+            return freq;
+        }
         public async Task<string> PostCredentials()
         {
             var loginRequest = new HttpRequestMessage
@@ -47,11 +58,9 @@ namespace ReportAppAPI.Services
         public async Task<(List<DateTime> dateTimes, List<double> actualValues)> PostParamValues(Module module, int? paramId)
         {
             var authToken = await PostCredentials();
-            //var reportFrequency = AutoReport.ReportFrequency; //to be fixed
-            var startDate = DateTime.UtcNow.AddDays(-1).ToString("O");
+            var startDate = DateTime.UtcNow.AddDays(-GetReportFrequency()).ToString("O");
             var endDate = DateTime.UtcNow.ToString("O");
-            //var resolution = AutoReport.Resolution; //to be fixed
-            var resolution = 60; //in minutes
+            var resolution = GetResolution();
             List<double> actualValues = new List<double>();
             List<DateTime> dateTimes = new List<DateTime>();
             var url = $"https://api.dei.prismasense.com/energy/v1/parameters/{module.Device.Site}/{paramId}/values/";
@@ -113,7 +122,6 @@ namespace ReportAppAPI.Services
             }
             else if (module.Type == "scatter")
             {
-                ExtractScatterData(module);
                 PlotScatterChart(module, plt);
             }
             else if (module.Type == "table")
@@ -266,16 +274,6 @@ namespace ReportAppAPI.Services
                 legend.FontSize = 9;
                 plt.XTicks(xAxisData, dateTimeArray);
                 plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 9);
-            }
-        }
-        private void ExtractScatterData(Module module)
-        {
-            foreach (var dataset in module.Datasets)
-            {
-                if (dataset.Data != null && dataset.Data.Length > 0 && dataset.Data[0].Type == JTokenType.Object)
-                {
-                    dataset.ScatterData = dataset.Data.Select(d => d.ToObject<ScatterData>()).ToList();
-                }
             }
         }
         private System.Drawing.Color GetColorFromJToken(JToken colorToken)
