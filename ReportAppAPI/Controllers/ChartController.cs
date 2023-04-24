@@ -57,11 +57,12 @@ namespace ReportAppAPI.Controllers
         [HttpPost("emailReport/{id}")] //template
         public async Task<IActionResult> SendWeeklyReport(int id)
         {
+            //var jsonAutoReportInfo = await Request.ReadFromJsonAsync();
             var jsonString = await _jsonDbService.GetJsonFileByIdAsync(id);
             List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
             foreach (var module in modules)
             {
-                _emailService.PlotWeeklyChart(module);
+                _emailService.PlotAutoChart(module);
             }
             byte[] pdf = _emailPDFService.buildPdf(modules);
             return File(pdf, "application/pdf", "report.pdf");

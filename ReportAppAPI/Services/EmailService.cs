@@ -35,6 +35,11 @@ namespace ReportAppAPI.Services
         //    int freq = autoReport.ReportFrequency;
         //    return (res, freq);
         //}
+        public async Task<dynamic> GetAutoReportInfo(string autoReportInfo)
+        {
+            dynamic autoReport = JsonConvert.DeserializeObject<AutoReport>(autoReportInfo);
+            return autoReport;
+        }
         public async Task<string> PostCredentials()
         {
             var loginRequest = new HttpRequestMessage
@@ -67,9 +72,9 @@ namespace ReportAppAPI.Services
         public async Task<(List<DateTime> dateTimes, List<double> actualValues)> PostParamValues(Module module, int? paramId)
         {
             var authToken = await PostCredentials();
-            var startDate = DateTime.UtcNow.AddDays(-GetReportFrequency()).ToString("O");
+            var startDate = DateTime.UtcNow.AddDays(-1).ToString("O");
             var endDate = DateTime.UtcNow.ToString("O");
-            var resolution = GetResolution();
+            var resolution = 60;
             List<double> actualValues = new List<double>();
             List<DateTime> dateTimes = new List<DateTime>();
             var url = $"https://api.dei.prismasense.com/energy/v1/parameters/{module.Device.Site}/{paramId}/values/";
@@ -105,7 +110,7 @@ namespace ReportAppAPI.Services
             }
         }
 
-        public void PlotWeeklyChart(Module module)
+        public void PlotAutoChart(Module module)
         {
             int newWidth = (int)Math.Round((double)module.ParentWidth * ((double)module.Width / 100));
             int newHeight = (int)Math.Round((double)module.ParentHeight * ((double)module.Height / 100));
@@ -271,7 +276,6 @@ namespace ReportAppAPI.Services
                 var actualValues = PostParamValues(module, paramId).Result.actualValues;
                 double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
                 var color = GetColorFromJToken(dataset.BorderColor);
-                //double[] xValues = dataset.ScatterData.Take(dateTimeArray.Length).Select(scatterData => scatterData.X.Value).ToArray();
                 double[] xAxisData = dateTimeArray.Select(dateString => DateTime.ParseExact(dateString, "dd/MM/yyyy, HH:mm", CultureInfo.InvariantCulture).ToOADate()).ToArray();
                 plt.AddScatter(xAxisData, actualValuesArray, markerSize: 5, lineWidth: 0, label: dataset.Label, color: color);
                 for (int i = 0; i < xAxisData.Length; i++)
