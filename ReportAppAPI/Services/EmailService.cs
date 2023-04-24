@@ -14,7 +14,6 @@ namespace ReportAppAPI.Services
     public class EmailService
     {
         private static readonly HttpClient _httpClient = new HttpClient();
-        //private readonly PeriodicTimer _timer = new(TimeSpan.FromSeconds(10));
 
         public async Task<string> PostCredentials()
         {
@@ -52,7 +51,7 @@ namespace ReportAppAPI.Services
             var startDate = DateTime.UtcNow.AddDays(-1).ToString("O");
             var endDate = DateTime.UtcNow.ToString("O");
             //var resolution = AutoReport.Resolution; //to be fixed
-            var resolution = 720; //in minutes
+            var resolution = 60; //in minutes
             List<double> actualValues = new List<double>();
             List<DateTime> dateTimes = new List<DateTime>();
             var url = $"https://api.dei.prismasense.com/energy/v1/parameters/{module.Device.Site}/{paramId}/values/";
@@ -157,7 +156,7 @@ namespace ReportAppAPI.Services
             {
                 return string.Format("{1}, {0}", module.Device.Name, module.Aggregate);
             }
-        } //no need to change
+        }
         private void PlotLineChart(Module module, Plot plt)
         {
             var paramId = module.Datasets[0].ParameterId;
@@ -179,7 +178,7 @@ namespace ReportAppAPI.Services
                 }
             }
             plt.Title(chartTitle, size: 11);
-            plt.XTicks(xAxisData, dateTimeArray); //labels testing ***need to fix this***
+            plt.XTicks(xAxisData, dateTimeArray);
             var legend = plt.Legend(location: Alignment.UpperRight);
             legend.Orientation = Orientation.Horizontal;
             legend.FontSize = 9;
@@ -187,19 +186,22 @@ namespace ReportAppAPI.Services
         } //seems OK
         private void PlotBarChart(Module module, Plot plt)
         {
+            var paramId = module.Datasets[0].ParameterId;
+            List<DateTime> dateTimes = PostParamValues(module, paramId).Result.dateTimes;
+            string[] dateTimeArray = dateTimes.Select(x => x.ToString("dd/MM/yyyy, HH:mm")).ToArray();
             string chartTitle = GetChartTitle(module);
-            //string[] labels = module.Labels.ToArray(); //labels testing
             foreach (var dataset in module.Datasets)
             {
-                double[] values = dataset.Data.Select(x => x.Value<double>()).ToArray();
+                var actualValues = PostParamValues(module, paramId).Result.actualValues;
+                double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
                 System.Drawing.Color backgroundColor = GetColorFromJToken(dataset.BackgroundColor);
-                var bar = plt.AddBar(values);
+                var bar = plt.AddBar(actualValuesArray);
                 bar.Font.Size = 9;
                 bar.FillColor = backgroundColor;
                 bar.ShowValuesAboveBars = true;
             }
             plt.Title(chartTitle, size: 11);
-            plt.XTicks(module.Labels); //labels testing
+            plt.XTicks(dateTimeArray);
             plt.SetAxisLimits(yMin: 0);
             plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 9);
         }
@@ -223,7 +225,7 @@ namespace ReportAppAPI.Services
                 backgroundColors[i] = GetColorFromJToken(module.Datasets[0].BackgroundColor[i]);
             }
             pie.SliceFillColors = backgroundColors;
-        }
+        } //NOT DONE YET// STUFF TO FIGURE OUT: How to get paramId properly for all parameters
         private void PlotAggregatedBarChart(Module module, Plot plt)
         {
             string chartTitle = GetChartTitle(module);
@@ -241,23 +243,28 @@ namespace ReportAppAPI.Services
         }
         private void PlotScatterChart(Module module, Plot plt)
         {
+            var paramId = module.Datasets[0].ParameterId;
+            List<DateTime> datesScatter = PostParamValues(module, paramId).Result.dateTimes;
+            string[] dateTimeArray = datesScatter.Select(x => x.ToString("dd/MM/yyyy, HH:mm")).ToArray();
             string chartTitle = GetChartTitle(module);
-            string[] labels = module.Labels.ToArray();
             plt.Title(chartTitle, size: 11);
             foreach (var dataset in module.Datasets)
             {
+                paramId = dataset.ParameterId;
+                var actualValues = PostParamValues(module, paramId).Result.actualValues;
+                double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
                 var color = GetColorFromJToken(dataset.BorderColor);
-                double[] xValues = dataset.ScatterData.Select(scatterData => scatterData.X.Value).ToArray();
-                double[] yValues = dataset.ScatterData.Select(scatterData => scatterData.Y.Value).ToArray();
-                plt.AddScatter(xValues, yValues, markerSize: 5, lineWidth: 0, label: dataset.Label, color: color);
-                for (int i = 0; i < xValues.Length; i++)
+                //double[] xValues = dataset.ScatterData.Take(dateTimeArray.Length).Select(scatterData => scatterData.X.Value).ToArray();
+                double[] xAxisData = dateTimeArray.Select(dateString => DateTime.ParseExact(dateString, "dd/MM/yyyy, HH:mm", CultureInfo.InvariantCulture).ToOADate()).ToArray();
+                plt.AddScatter(xAxisData, actualValuesArray, markerSize: 5, lineWidth: 0, label: dataset.Label, color: color);
+                for (int i = 0; i < xAxisData.Length; i++)
                 {
-                    plt.AddText(yValues[i].ToString(), x: xValues[i] - 0.5, y: yValues[i] - 0.5, color: System.Drawing.Color.Black, size: 9);
+                    plt.AddText(actualValuesArray[i].ToString(), x: xAxisData[i] - 0.5, y: actualValuesArray[i] - 0.5, color: System.Drawing.Color.Black, size: 9);
                 }
                 var legend = plt.Legend(location: Alignment.UpperRight);
                 legend.Orientation = Orientation.Horizontal;
                 legend.FontSize = 9;
-                plt.XTicks(xValues, labels);
+                plt.XTicks(xAxisData, dateTimeArray);
                 plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 9);
             }
         }
@@ -307,5 +314,40 @@ namespace ReportAppAPI.Services
                 return System.Drawing.Color.Black;
             }
         }
+        private double? AggregatedChart(Module module)
+        {
+            if (module.Aggregate == "sum")
+            {
+                var actualValues = PostParamValues(module, module.Datasets[0].ParameterId).Result.actualValues;
+                double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
+                double sum = actualValuesArray.Sum();
+                return sum;
+            }
+            else if(module.Aggregate == "avg")
+            {
+                var actualValues = PostParamValues(module, module.Datasets[0].ParameterId).Result.actualValues;
+                double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
+                double avg = actualValuesArray.Average();
+                return avg;
+            }
+            else if(module.Aggregate == "min")
+            {
+                var actualValues = PostParamValues(module, module.Datasets[0].ParameterId).Result.actualValues;
+                double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
+                double min = actualValuesArray.Min();
+                return min;
+            }
+            else if(module.Aggregate == "max")
+            {
+                var actualValues = PostParamValues(module, module.Datasets[0].ParameterId).Result.actualValues;
+                double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
+                double max = actualValuesArray.Max();
+                return max;
+            }
+            else
+            {
+                return null;
+            }
+        } //template
     }
 }

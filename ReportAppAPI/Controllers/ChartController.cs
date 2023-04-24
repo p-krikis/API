@@ -13,12 +13,14 @@ namespace ReportAppAPI.Controllers
         private readonly PDFbuildService _pdfbuildService;
         private readonly JsonDbService _jsonDbService;
         private readonly EmailService _emailService;
+        private readonly EmailPDFService _emailPDFService;
         public ChartController(JsonDbService jsonDbService)
         {
             _chartService = new ChartService();
             _pdfbuildService = new PDFbuildService();
             _jsonDbService = jsonDbService;
             _emailService = new EmailService();
+            _emailPDFService = new EmailPDFService();
         }
         [HttpPost("saveJSON")]
         public async Task<IActionResult> SaveJSON([FromBody] List<Module> modules)
@@ -62,7 +64,7 @@ namespace ReportAppAPI.Controllers
             {
                 _emailService.PlotWeeklyChart(module);
             }
-            byte[] pdf = _pdfbuildService.buildPdf(modules);
+            byte[] pdf = _emailPDFService.buildPdf(modules);
             return File(pdf, "application/pdf", "report.pdf");
         }
     }
