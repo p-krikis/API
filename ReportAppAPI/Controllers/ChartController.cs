@@ -57,8 +57,6 @@ namespace ReportAppAPI.Controllers
         [HttpPost("emailReport/{id}")] //template
         public async Task<IActionResult> SendWeeklyReport([FromBody]AutoReport autoReport, int id)
         {
-            string autoReportString = JsonConvert.SerializeObject(autoReport);
-            await _emailService.GetAutoReportInfo(autoReportString);
             var jsonString = await _jsonDbService.GetJsonFileByIdAsync(id);
             List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
             foreach (var module in modules)

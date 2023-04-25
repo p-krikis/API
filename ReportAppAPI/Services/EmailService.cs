@@ -12,11 +12,11 @@ namespace ReportAppAPI.Services
     public class EmailService
     {
         private static readonly HttpClient _httpClient = new HttpClient();
-        public async Task<(int reportFrequency, int resolution)> GetAutoReportInfo(string autoReportInfo)
+        public async Task<(int reportFrequency, int resolution)> GetAutoReportInfo(string autoReport)
         {
-            dynamic autoReport = JsonConvert.DeserializeObject<AutoReport>(autoReportInfo);
-            int reportFrequency = autoReport.ReportFrequency;
-            int resolutionRequest = autoReport.Resolution;
+            dynamic autoReportInfo = JsonConvert.DeserializeObject<AutoReport>(autoReport);
+            int reportFrequency = autoReportInfo.ReportFrequency;
+            int resolutionRequest = autoReportInfo.Resolution;
             return (reportFrequency, resolutionRequest);
         }
         public async Task<string> PostCredentials()
