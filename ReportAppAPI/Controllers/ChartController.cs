@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MailKit.Net.Smtp;
+using MailKit.Security;
+using Microsoft.AspNetCore.Mvc;
+using MimeKit;
 using Newtonsoft.Json;
 using ReportAppAPI.Models;
 using ReportAppAPI.Services;
@@ -64,7 +67,28 @@ namespace ReportAppAPI.Controllers
                 _emailService.PlotAutoChart(module);
             }
             byte[] pdf = _emailPDFService.buildPdf(modules);
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("ReportApp", "reportApp-autoUpdate@example.com"));
+            message.To.Add(new MailboxAddress("User", autoReport.Email));
+            message.Subject = "Weekly Report";
+            var builder = new BodyBuilder();
+            builder.TextBody = "Weekly report";
+            builder.Attachments.Add("report.pdf", pdf, ContentType.Parse("application/pdf"));
+            message.Body = builder.ToMessageBody();
+            using (var client = new SmtpClient())
+            {
+                await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+                await client.AuthenticateAsync("email", "password");
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
+            }
             return File(pdf, "application/pdf", "report.pdf");
+        }
+        [HttpPut]
+        public async Task<IActionResult> StopTimer()
+        {
+
+            return Ok("Timer stopped");
         }
     }
 }
@@ -74,3 +98,19 @@ namespace ReportAppAPI.Controllers
 //https://localhost:7095/api/chart/getSingleJSON/{id}
 //https://localhost:7095/api/chart/deleteSingleJSON/{id}
 //https://localhost:7095/api/chart/emailReport/{id}
+
+
+
+
+//var message = new MimeMessage();
+//message.From.Add(new MailboxAddress("ReportApp", "reportApp-autoReport@example.com"));
+//message.To.Add(new MailboxAddress("User", autoReport.Email));
+//message.Subject = "Weekly Report";
+//var builder = new BodyBuilder();
+//builder.TextBody = "Weekly report";
+//builder.Attachments.Add("report.pdf", pdf, ContentType.Parse("application/pdf"));
+//message.Body = builder.ToMessageBody();
+//using (var client = new())
+//{
+
+//}
