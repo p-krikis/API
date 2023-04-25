@@ -2,6 +2,7 @@
 using Newtonsoft.Json.Linq;
 using ReportAppAPI.Models;
 using ScottPlot;
+using System.Data;
 using System.Globalization;
 using System.Net.Http.Headers;
 using System.Text;
@@ -234,10 +235,9 @@ namespace ReportAppAPI.Services
             string chartTitle = GetChartTitle(module);
             string[] labels = module.Labels.ToArray();
             List<double> aggValues = new List<double>();
-            //double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
-            foreach (var dataset in module.Datasets)
+            for (int i = 0; i < module.Labels.Length; i++) //SHOULDN'T WORK MUST BE CHANGED
             {
-                paramId = dataset.ParameterId;
+                paramId = module.Datasets[0].ParameterId;
                 var aggregatedValue = AggregatedChart(module);
                 aggValues.Add(aggregatedValue);
             }
@@ -323,21 +323,21 @@ namespace ReportAppAPI.Services
                 double sum = actualValuesArray.Sum();
                 return sum;
             }
-            else if(module.Aggregate == "average")
+            else if (module.Aggregate == "average")
             {
                 var actualValues = PostParamValues(module, module.Datasets[0].ParameterId).Result.actualValues;
                 double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
                 double avg = actualValuesArray.Average();
                 return avg;
             }
-            else if(module.Aggregate == "min")
+            else if (module.Aggregate == "min")
             {
                 var actualValues = PostParamValues(module, module.Datasets[0].ParameterId).Result.actualValues;
                 double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
                 double min = actualValuesArray.Min();
                 return min;
             }
-            else if(module.Aggregate == "max")
+            else if (module.Aggregate == "max")
             {
                 var actualValues = PostParamValues(module, module.Datasets[0].ParameterId).Result.actualValues;
                 double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();

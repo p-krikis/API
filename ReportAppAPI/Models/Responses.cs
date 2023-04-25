@@ -2,7 +2,7 @@
 {
     public class ParametersResponse
     {
-        public int? ParameterId { get; set; }
+        public int[]? ParameterId { get; set; }
         public int? SiteId { get; set; }
         public string? Name { get; set; }
     }

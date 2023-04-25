@@ -108,7 +108,7 @@ namespace ReportAppAPI.Services
         {
             int numColumns = 1;
             Table panelTable = new Table(numColumns, true);
-            panelTable.AddHeaderCell(new Cell().Add(new Paragraph("The ").Add(module.Aggregate).Add(" value of ").Add(module.Datasets[0].Label)).SetTextAlignment(TextAlignment.CENTER));
+            panelTable.AddHeaderCell(new Cell().Add(new Paragraph($"The {module.Aggregate} value of {module.Datasets[0].Label}")).SetTextAlignment(TextAlignment.CENTER));
             panelTable.AddCell(new Cell().Add(new Paragraph($"The {module.Aggregate} value of {module.Datasets[0].Label} from {module.From} to {module.To} was {module.Datasets[0].Data[0]}")).SetTextAlignment(TextAlignment.CENTER));
             document.Add(panelTable);
             document.Add(new AreaBreak());
