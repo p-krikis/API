@@ -1,7 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Org.BouncyCastle.Crypto.Parameters;
 using ReportAppAPI.Models;
 using ScottPlot;
 using System.Globalization;
@@ -14,31 +12,12 @@ namespace ReportAppAPI.Services
     public class EmailService
     {
         private static readonly HttpClient _httpClient = new HttpClient();
-        //private readonly AutoReport _autoReport = new AutoReport();
-
-        //public int GetResolution()
-        //{
-        //    dynamic autoReport = JsonConvert.DeserializeObject<AutoReport>(autoReportInfo);
-        //    var res = autoReport.Resolution;
-        //    return res;
-        //}
-        //public int GetReportFrequency()
-        //{
-        //    dynamic autoReport = JsonConvert.DeserializeObject<AutoReport>(autoReportInfo);
-        //    var freq = autoReport.ReportFrequency;
-        //    return freq;
-        //}
-        //public Task<int res, int freq> GetAutoReportInfo(string autoReportInfo)
-        //{
-        //    dynamic autoReport = JsonConvert.DeserializeObject(autoReportInfo);
-        //    int res = autoReport.Resolution;
-        //    int freq = autoReport.ReportFrequency;
-        //    return (res, freq);
-        //}
-        public async Task<dynamic> GetAutoReportInfo(string autoReportInfo)
+        public async Task<(int reportFrequency, int resolution)> GetAutoReportInfo(string autoReportInfo)
         {
             dynamic autoReport = JsonConvert.DeserializeObject<AutoReport>(autoReportInfo);
-            return autoReport;
+            int reportFrequency = autoReport.ReportFrequency;
+            int resolutionRequest = autoReport.Resolution;
+            return (reportFrequency, resolutionRequest);
         }
         public async Task<string> PostCredentials()
         {
@@ -71,10 +50,11 @@ namespace ReportAppAPI.Services
         }
         public async Task<(List<DateTime> dateTimes, List<double> actualValues)> PostParamValues(Module module, int? paramId)
         {
+            //var autoReportInfo = "0";
             var authToken = await PostCredentials();
             var startDate = DateTime.UtcNow.AddDays(-1).ToString("O");
             var endDate = DateTime.UtcNow.ToString("O");
-            var resolution = 60;
+            var resolution = 60; //GetAutoReportInfo(autoReportInfo).Result.;
             List<double> actualValues = new List<double>();
             List<DateTime> dateTimes = new List<DateTime>();
             var url = $"https://api.dei.prismasense.com/energy/v1/parameters/{module.Device.Site}/{paramId}/values/";
@@ -109,7 +89,6 @@ namespace ReportAppAPI.Services
                 return (null, null);
             }
         }
-
         public void PlotAutoChart(Module module)
         {
             int newWidth = (int)Math.Round((double)module.ParentWidth * ((double)module.Width / 100));
@@ -189,7 +168,7 @@ namespace ReportAppAPI.Services
             foreach (var dataset in module.Datasets)
             {
                 paramId = dataset.ParameterId;
-                var actualValues = PostParamValues(module, paramId ).Result.actualValues;
+                var actualValues = PostParamValues(module, paramId).Result.actualValues;
                 double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
                 var colorLine = GetColorFromJToken(dataset.BorderColor);
                 var backgroundColor = GetColorFromJToken(dataset.BackgroundColor);
