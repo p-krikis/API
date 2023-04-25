@@ -184,7 +184,7 @@ namespace ReportAppAPI.Services
             legend.Orientation = Orientation.Horizontal;
             legend.FontSize = 9;
             plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 10);
-        } //seems OK
+        }
         private void PlotBarChart(Module module, Plot plt)
         {
             var paramId = module.Datasets[0].ParameterId;
@@ -193,6 +193,7 @@ namespace ReportAppAPI.Services
             string chartTitle = GetChartTitle(module);
             foreach (var dataset in module.Datasets)
             {
+                paramId = dataset.ParameterId;
                 var actualValues = PostParamValues(module, paramId).Result.actualValues;
                 double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
                 System.Drawing.Color backgroundColor = GetColorFromJToken(dataset.BackgroundColor);
@@ -229,9 +230,18 @@ namespace ReportAppAPI.Services
         } //NOT DONE YET// STUFF TO FIGURE OUT: How to get paramId properly for all parameters
         private void PlotAggregatedBarChart(Module module, Plot plt)
         {
+            var paramId = module.Datasets[0].ParameterId;
             string chartTitle = GetChartTitle(module);
             string[] labels = module.Labels.ToArray();
-            double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
+            List<double> aggValues = new List<double>();
+            //double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
+            foreach (var dataset in module.Datasets)
+            {
+                paramId = dataset.ParameterId;
+                var aggregatedValue = AggregatedChart(module);
+                aggValues.Add(aggregatedValue);
+            }
+            double[] values = aggValues.ToArray();
             System.Drawing.Color backgroundColor = GetColorFromJToken(module.Datasets[0].BackgroundColor);
             var bar = plt.AddBar(values);
             plt.Title(chartTitle, size: 11);
@@ -304,7 +314,7 @@ namespace ReportAppAPI.Services
                 return System.Drawing.Color.Black;
             }
         }
-        private double? AggregatedChart(Module module)
+        private double AggregatedChart(Module module)
         {
             if (module.Aggregate == "sum")
             {
@@ -313,7 +323,7 @@ namespace ReportAppAPI.Services
                 double sum = actualValuesArray.Sum();
                 return sum;
             }
-            else if(module.Aggregate == "avg")
+            else if(module.Aggregate == "average")
             {
                 var actualValues = PostParamValues(module, module.Datasets[0].ParameterId).Result.actualValues;
                 double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
@@ -336,7 +346,7 @@ namespace ReportAppAPI.Services
             }
             else
             {
-                return null;
+                return 0;
             }
         } //template
     }
