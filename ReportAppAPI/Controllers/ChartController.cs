@@ -17,6 +17,7 @@ namespace ReportAppAPI.Controllers
         private readonly JsonDbService _jsonDbService;
         private readonly EmailService _emailService;
         private readonly EmailPDFService _emailPDFService;
+        public PeriodicTimer _timer = new PeriodicTimer(TimeSpan.FromDays(1));
         public ChartController(JsonDbService jsonDbService)
         {
             _chartService = new ChartService();
@@ -60,34 +61,38 @@ namespace ReportAppAPI.Controllers
         [HttpPost("emailReport/{id}")] //template
         public async Task<IActionResult> SendWeeklyReport([FromBody]AutoReport autoReport, int id)
         {
-            var jsonString = await _jsonDbService.GetJsonFileByIdAsync(id);
-            List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
-            foreach (var module in modules)
+            _timer = new PeriodicTimer(TimeSpan.FromDays(autoReport.ReportFrequency));
+            while (await _timer.WaitForNextTickAsync())
             {
-                _emailService.PlotAutoChart(module);
+                var jsonString = await _jsonDbService.GetJsonFileByIdAsync(id);
+                List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
+                foreach (var module in modules)
+                {
+                    _emailService.PlotAutoChart(module);
+                }
+                byte[] pdf = _emailPDFService.buildPdf(modules);
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress("ReportApp", "reportApp-autoUpdate@example.com"));
+                message.To.Add(new MailboxAddress("User", autoReport.Email));
+                message.Subject = "Weekly Report";
+                var builder = new BodyBuilder();
+                builder.TextBody = "Weekly report";
+                builder.Attachments.Add("report.pdf", pdf, ContentType.Parse("application/pdf"));
+                message.Body = builder.ToMessageBody();
+                using (var client = new SmtpClient())
+                {
+                    await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+                    await client.AuthenticateAsync("email", "password");
+                    await client.SendAsync(message);
+                    await client.DisconnectAsync(true);
+                }
             }
-            byte[] pdf = _emailPDFService.buildPdf(modules);
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("ReportApp", "reportApp-autoUpdate@example.com"));
-            message.To.Add(new MailboxAddress("User", autoReport.Email));
-            message.Subject = "Weekly Report";
-            var builder = new BodyBuilder();
-            builder.TextBody = "Weekly report";
-            builder.Attachments.Add("report.pdf", pdf, ContentType.Parse("application/pdf"));
-            message.Body = builder.ToMessageBody();
-            using (var client = new SmtpClient())
-            {
-                await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-                await client.AuthenticateAsync("email", "password");
-                await client.SendAsync(message);
-                await client.DisconnectAsync(true);
-            }
-            return File(pdf, "application/pdf", "report.pdf");
+            return Ok("Email sent");
         }
-        [HttpPut]
+        [HttpPut("stopAutoUpdates")]
         public async Task<IActionResult> StopTimer()
         {
-
+            _timer.Dispose();
             return Ok("Timer stopped");
         }
     }
