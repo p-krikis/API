@@ -69,9 +69,10 @@ namespace ReportAppAPI.Services
             }
             plt.SaveFig(Path.Combine(targetFolderPath, $"{module.Aggregate}_{module.Type}_chart{fileCounter}.png"));
         }
+
         public string GetChartTitle(Module module)
         {
-            if (string.IsNullOrEmpty (module.Aggregate))
+            if (string.IsNullOrEmpty(module.Aggregate))
             {
                 return string.Format("{0}", module.Device.Name, module.Aggregate); //placeholder
             }
@@ -80,12 +81,13 @@ namespace ReportAppAPI.Services
                 return string.Format("{1}, {0}", module.Device.Name, module.Aggregate);
             }
         }
+
         private void PlotLineChart(Module module, Plot plt)
         {
             double[] xAxisData = module.Labels.Select(dateString => DateTime.ParseExact(dateString, "dd/MM/yyyy, HH:mm", CultureInfo.InvariantCulture).ToOADate()).ToArray();
             string[] labels = module.Labels.ToArray();
             double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
-            
+
             string chartTitle = GetChartTitle(module);
             Console.Write(xAxisData);
             foreach (var dataset in module.Datasets)
@@ -105,6 +107,7 @@ namespace ReportAppAPI.Services
             legend.FontSize = 9;
             plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 10);
         }
+
         private void PlotBarChart(Module module, Plot plt)
         {
             string chartTitle = GetChartTitle(module);
@@ -123,6 +126,7 @@ namespace ReportAppAPI.Services
             plt.SetAxisLimits(yMin: 0);
             plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 9);
         }
+
         private void PlotPieChart(Module module, Plot plt)
         {
             string chartTitle = GetChartTitle(module);
@@ -144,6 +148,7 @@ namespace ReportAppAPI.Services
             }
             pie.SliceFillColors = backgroundColors;
         }
+
         private void PlotAggregatedBarChart(Module module, Plot plt)
         {
             string chartTitle = GetChartTitle(module);
@@ -159,6 +164,7 @@ namespace ReportAppAPI.Services
             plt.SetAxisLimits(yMin: 0);
             plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 9);
         }
+
         private void PlotScatterChart(Module module, Plot plt)
         {
             string chartTitle = GetChartTitle(module);
@@ -181,6 +187,7 @@ namespace ReportAppAPI.Services
                 plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 9);
             }
         }
+
         private void ExtractScatterData(Module module)
         {
             foreach (var dataset in module.Datasets)
@@ -191,6 +198,7 @@ namespace ReportAppAPI.Services
                 }
             }
         }
+
         private System.Drawing.Color GetColorFromJToken(JToken colorToken)
         {
             if (colorToken == null)
@@ -211,6 +219,7 @@ namespace ReportAppAPI.Services
                 return System.Drawing.Color.Black;
             }
         }
+
         private System.Drawing.Color ParseRgbaColor(string rgbaString)
         {
             var match = Regex.Match(rgbaString, @"rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d\.]+)\)");

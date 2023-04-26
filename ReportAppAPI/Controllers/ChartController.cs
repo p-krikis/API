@@ -18,6 +18,7 @@ namespace ReportAppAPI.Controllers
         private readonly EmailService _emailService;
         private readonly EmailPDFService _emailPDFService;
         public PeriodicTimer _timer = new PeriodicTimer(TimeSpan.FromDays(1));
+
         public ChartController(JsonDbService jsonDbService)
         {
             _chartService = new ChartService();
@@ -26,6 +27,7 @@ namespace ReportAppAPI.Controllers
             _emailService = new EmailService();
             _emailPDFService = new EmailPDFService();
         }
+
         [HttpPost("saveJSON")]
         public async Task<IActionResult> SaveJSON([FromBody] List<Module> modules)
         {
@@ -34,12 +36,14 @@ namespace ReportAppAPI.Controllers
             int id = await _jsonDbService.SaveFileAsync(name, jsonString);
             return Ok(new { Id = id, Name = name });
         }
+
         [HttpGet("getAllJSON")]
         public async Task<IActionResult> GetAllJSON()
         {
             var files = await _jsonDbService.GetAllJsonFilesAsync();
             return Ok(files);
         }
+
         [HttpGet("getSingleJSON/{id}")]
         public async Task<IActionResult> GetSingleJSON(int id)
         {
@@ -52,14 +56,16 @@ namespace ReportAppAPI.Controllers
             byte[] pdf = _pdfbuildService.buildPdf(modules);
             return File(pdf, "application/pdf", "report.pdf");
         }
+
         [HttpDelete("deleteSingleJSON/{id}")]
         public async Task<IActionResult> DeleteSingleJSON(int id)
         {
             await _jsonDbService.DeleteJsonFileByIdAsync(id);
             return Ok("Deleted");
         }
+
         [HttpPost("emailReport/{id}")] //template
-        public async Task<IActionResult> SendWeeklyReport([FromBody]AutoReport autoReport, int id)
+        public async Task<IActionResult> SendWeeklyReport([FromBody] AutoReport autoReport, int id)
         {
             _timer = new PeriodicTimer(TimeSpan.FromDays(autoReport.ReportFrequency));
             while (await _timer.WaitForNextTickAsync())
@@ -89,6 +95,7 @@ namespace ReportAppAPI.Controllers
             }
             return Ok("Email sent");
         }
+
         [HttpPut("stopAutoUpdates")]
         public async Task<IActionResult> StopTimer()
         {

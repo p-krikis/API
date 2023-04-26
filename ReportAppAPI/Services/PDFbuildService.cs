@@ -102,12 +102,14 @@ namespace ReportAppAPI.Services
             document.Add(panelTable);
             document.Add(new AreaBreak());
         }
+
         private void CreateHeader(Module module, Document document)
         {
             document.Add(new Paragraph($"{module.Title}").SetTextAlignment(TextAlignment.CENTER).SetFontSize(16).SetBold());
             document.Add(new Paragraph($"{module.Text}").SetTextAlignment(TextAlignment.CENTER));
             document.Add(new Paragraph(" "));
         }
+
         public string GetTargetFolderPath()
         {
             string imagePath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -118,7 +120,7 @@ namespace ReportAppAPI.Services
         public byte[] buildPdf(List<Module> modules)
         {
             string rootFolderPNG = GetTargetFolderPath(); //image sauce
-            
+
             using (MemoryStream stream = new MemoryStream())
             {
                 float parentWidth = modules[0].ParentWidth;
@@ -170,7 +172,6 @@ namespace ReportAppAPI.Services
                 int lastPageNumber = pdfDocument.GetNumberOfPages();
                 foreach (var image in images)
                 {
-                    
                     if (lastPageNumber == 0)
                     {
                         Image pdfImage = new(image.Item1);

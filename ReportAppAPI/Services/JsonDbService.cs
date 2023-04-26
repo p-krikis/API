@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using ReportAppAPI.Models;
 using System.Data.SqlClient;
 
 namespace ReportAppAPI.Services
@@ -12,6 +11,7 @@ namespace ReportAppAPI.Services
         {
             _configuration = configuration;
         }
+
         public async Task<int> SaveFileAsync(string name, string jsonString)
         {
             int id;
@@ -23,6 +23,7 @@ namespace ReportAppAPI.Services
             }
             return id;
         }
+
         public async Task<List<(int id, string name, DateTime timeCreated)>> GetAllJsonFilesAsync()
         {
             using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
@@ -45,6 +46,7 @@ namespace ReportAppAPI.Services
                 }
             }
         }
+
         public async Task<string> GetJsonFileByIdAsync(int id)
         {
             using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
@@ -67,6 +69,7 @@ namespace ReportAppAPI.Services
                 }
             }
         }
+
         public async Task DeleteJsonFileByIdAsync(int id)
         {
             using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))

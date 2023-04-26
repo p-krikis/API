@@ -13,6 +13,7 @@ namespace ReportAppAPI.Services
     public class EmailService
     {
         private static readonly HttpClient _httpClient = new HttpClient();
+
         public async Task<(int reportFrequency, int resolution)> GetAutoReportInfo(string autoReport)
         {
             dynamic autoReportInfo = JsonConvert.DeserializeObject<AutoReport>(autoReport);
@@ -20,6 +21,7 @@ namespace ReportAppAPI.Services
             int resolutionRequest = autoReportInfo.Resolution;
             return (reportFrequency, resolutionRequest);
         }
+
         public async Task<string> PostCredentials()
         {
             var loginRequest = new HttpRequestMessage
@@ -49,6 +51,7 @@ namespace ReportAppAPI.Services
                 return null;
             }
         }
+
         public async Task<(List<DateTime> dateTimes, List<double> actualValues)> PostParamValues(Module module, int? paramId)
         {
             //var autoReportInfo = "0";
@@ -90,6 +93,7 @@ namespace ReportAppAPI.Services
                 return (null, null);
             }
         }
+
         public void PlotAutoChart(Module module)
         {
             int newWidth = (int)Math.Round((double)module.ParentWidth * ((double)module.Width / 100));
@@ -148,6 +152,7 @@ namespace ReportAppAPI.Services
             }
             plt.SaveFig(Path.Combine(targetFolderPath, $"{module.Aggregate}_{module.Type}_chart{fileCounter}.png"));
         }
+
         public string GetChartTitle(Module module)
         {
             if (string.IsNullOrEmpty(module.Aggregate))
@@ -159,6 +164,7 @@ namespace ReportAppAPI.Services
                 return string.Format("{1}, {0}", module.Device.Name, module.Aggregate);
             }
         }
+
         private void PlotLineChart(Module module, Plot plt)
         {
             var paramId = module.Datasets[0].ParameterId;
@@ -186,6 +192,7 @@ namespace ReportAppAPI.Services
             legend.FontSize = 9;
             plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 10);
         }
+
         private void PlotBarChart(Module module, Plot plt)
         {
             var paramId = module.Datasets[0].ParameterId;
@@ -208,13 +215,14 @@ namespace ReportAppAPI.Services
             plt.SetAxisLimits(yMin: 0);
             plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 9);
         }
+
         private void PlotPieChart(Module module, Plot plt)
         {
             var paramId = module.Datasets[0].ParameterId;
             string chartTitle = GetChartTitle(module);
             List<double> aggValues = new List<double>();
             string[] labels = module.Labels;
-            for(int i = 0; i < module.Labels.Length; i++)
+            for (int i = 0; i < module.Labels.Length; i++)
             {
                 paramId = module.aggParamId[i];
                 double[] valueArray = PostParamValues(module, paramId).Result.actualValues.ToArray();
@@ -256,6 +264,7 @@ namespace ReportAppAPI.Services
             }
             pie.SliceFillColors = backgroundColors;
         }
+
         private void PlotAggregatedBarChart(Module module, Plot plt)
         {
             var paramId = module.Datasets[0].ParameterId;
@@ -271,17 +280,17 @@ namespace ReportAppAPI.Services
                     double aggregatedValue = valueArray.Sum();
                     aggValues.Add(aggregatedValue);
                 }
-                else if(module.Aggregate == "average")
+                else if (module.Aggregate == "average")
                 {
                     double aggregatedValue = valueArray.Average();
                     aggValues.Add(aggregatedValue);
                 }
-                else if(module.Aggregate == "min")
+                else if (module.Aggregate == "min")
                 {
                     double aggregatedValue = valueArray.Min();
                     aggValues.Add(aggregatedValue);
                 }
-                else if(module.Aggregate == "max")
+                else if (module.Aggregate == "max")
                 {
                     double aggregatedValue = valueArray.Max();
                     aggValues.Add(aggregatedValue);
@@ -298,6 +307,7 @@ namespace ReportAppAPI.Services
             plt.SetAxisLimits(yMin: 0);
             plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 9);
         }
+
         private void PlotScatterChart(Module module, Plot plt)
         {
             var paramId = module.Datasets[0].ParameterId;
@@ -324,6 +334,7 @@ namespace ReportAppAPI.Services
                 plt.XAxis.TickLabelStyle(rotation: 45, fontSize: 9);
             }
         }
+
         private System.Drawing.Color GetColorFromJToken(JToken colorToken)
         {
             if (colorToken == null)
@@ -344,6 +355,7 @@ namespace ReportAppAPI.Services
                 return System.Drawing.Color.Black;
             }
         }
+
         private System.Drawing.Color ParseRgbaColor(string rgbaString)
         {
             var match = Regex.Match(rgbaString, @"rgba\((\d+),\s*(\d+),\s*(\d+),\s*([\d\.]+)\)");

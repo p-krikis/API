@@ -12,10 +12,12 @@ namespace ReportAppAPI.Services
     public class EmailPDFService
     {
         private readonly EmailService _emailService;
+
         public EmailPDFService()
         {
             _emailService = new EmailService();
         }
+
         private void CreateTable(Module module, Document document)
         {
             if (string.IsNullOrEmpty(module.Aggregate))
@@ -91,7 +93,7 @@ namespace ReportAppAPI.Services
                     }
                     else if (module.Aggregate == "average")
                     {
-                        var actualValues = _emailService.PostParamValues(module, paramId).Result.actualValues; 
+                        var actualValues = _emailService.PostParamValues(module, paramId).Result.actualValues;
                         double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
                         double sum = actualValuesArray.Average();
                         for (int i = 0; i < 1; i++)
@@ -170,12 +172,14 @@ namespace ReportAppAPI.Services
             document.Add(panelTable);
             document.Add(new AreaBreak());
         }
+
         private void CreateHeader(Module module, Document document)
         {
             document.Add(new Paragraph($"{module.Title}").SetTextAlignment(TextAlignment.CENTER).SetFontSize(16).SetBold());
             document.Add(new Paragraph($"{module.Text}").SetTextAlignment(TextAlignment.CENTER));
             document.Add(new Paragraph(" "));
         }
+
         public string GetTargetFolderPath()
         {
             string imagePath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
@@ -238,7 +242,6 @@ namespace ReportAppAPI.Services
                 int lastPageNumber = pdfDocument.GetNumberOfPages();
                 foreach (var image in images)
                 {
-
                     if (lastPageNumber == 0)
                     {
                         Image pdfImage = new(image.Item1);
