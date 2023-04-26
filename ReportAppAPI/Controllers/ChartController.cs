@@ -103,19 +103,3 @@ namespace ReportAppAPI.Controllers
 //https://localhost:7095/api/chart/getSingleJSON/{id}
 //https://localhost:7095/api/chart/deleteSingleJSON/{id}
 //https://localhost:7095/api/chart/emailReport/{id}
-
-
-
-
-//var message = new MimeMessage();
-//message.From.Add(new MailboxAddress("ReportApp", "reportApp-autoReport@example.com"));
-//message.To.Add(new MailboxAddress("User", autoReport.Email));
-//message.Subject = "Weekly Report";
-//var builder = new BodyBuilder();
-//builder.TextBody = "Weekly report";
-//builder.Attachments.Add("report.pdf", pdf, ContentType.Parse("application/pdf"));
-//message.Body = builder.ToMessageBody();
-//using (var client = new())
-//{
-
-//}

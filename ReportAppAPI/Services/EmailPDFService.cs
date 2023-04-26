@@ -25,10 +25,11 @@ namespace ReportAppAPI.Services
                 string[] dateTimesArray = dateTimes.Select(x => x.ToString("dd/MM/yyyy, HH:mm")).ToArray();
                 var dataTable = new DataTable();
                 dataTable.Columns.Add($"{module.Device.Name}");
-                foreach (var dataset in module.Datasets)
+                foreach (var dataset in module.Datasets) //horribly unoptimized
                 {
+                    paramId = dataset.ParameterId;
                     dataTable.Columns.Add(dataset.Label);
-                    var actualValues = _emailService.PostParamValues(module, dataset.ParameterId).Result.actualValues;
+                    var actualValues = _emailService.PostParamValues(module, paramId).Result.actualValues;
                     double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
                     for (int i = 0; i < dateTimesArray.Length; i++)
                     {
@@ -65,21 +66,77 @@ namespace ReportAppAPI.Services
             }
             else
             {
+                var paramId = module.Datasets[0].ParameterId;
                 var dataTable = new DataTable();
-                dataTable.Columns.Add($"{module.Aggregate}");
+                dataTable.Columns.Add($"{module.Device.Name}");
                 foreach (var dataset in module.Datasets)
                 {
+                    paramId = dataset.ParameterId;
                     dataTable.Columns.Add(dataset.Label);
-                }
-                for (int i = 0; i < module.Labels.Length; i++)
-                {
-                    var newRow = dataTable.NewRow();
-                    newRow[$"{module.Aggregate}"] = module.Labels[i];
-                    for (int j = 0; j < module.Datasets.Length; j++)
+                    if (module.Aggregate == "sum")
                     {
-                        newRow[module.Datasets[j].Label] = module.Datasets[j].Data[i];
+                        var actualValues = _emailService.PostParamValues(module, paramId).Result.actualValues;
+                        double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
+                        double sum = actualValuesArray.Sum();
+                        for (int i = 0; i < 1; i++)
+                        {
+                            if (i >= dataTable.Rows.Count)
+                            {
+                                DataRow row = dataTable.NewRow();
+                                row[$"{module.Device.Name}"] = module.Aggregate;
+                                dataTable.Rows.Add(row);
+                            }
+                            dataTable.Rows[i][$"{dataset.Label}"] = sum;
+                        }
                     }
-                    dataTable.Rows.Add(newRow);
+                    else if (module.Aggregate == "average")
+                    {
+                        var actualValues = _emailService.PostParamValues(module, paramId).Result.actualValues;
+                        double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
+                        double sum = actualValuesArray.Average();
+                        for (int i = 0; i < 1; i++)
+                        {
+                            if (i >= dataTable.Rows.Count)
+                            {
+                                DataRow row = dataTable.NewRow();
+                                row[$"{module.Device.Name}"] = module.Aggregate;
+                                dataTable.Rows.Add(row);
+                            }
+                            dataTable.Rows[i][$"{dataset.Label}"] = sum;
+                        }
+                    }
+                    else if (module.Aggregate == "min")
+                    {
+                        var actualValues = _emailService.PostParamValues(module, paramId).Result.actualValues;
+                        double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
+                        double sum = actualValuesArray.Min();
+                        for (int i = 0; i < 1; i++)
+                        {
+                            if (i >= dataTable.Rows.Count)
+                            {
+                                DataRow row = dataTable.NewRow();
+                                row[$"{module.Device.Name}"] = module.Aggregate;
+                                dataTable.Rows.Add(row);
+                            }
+                            dataTable.Rows[i][$"{dataset.Label}"] = sum;
+                        }
+                    }
+                    else if (module.Aggregate == "max")
+                    {
+                        var actualValues = _emailService.PostParamValues(module, paramId).Result.actualValues;
+                        double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
+                        double sum = actualValuesArray.Max();
+                        for (int i = 0; i < 1; i++)
+                        {
+                            if (i >= dataTable.Rows.Count)
+                            {
+                                DataRow row = dataTable.NewRow();
+                                row[$"{module.Device.Name}"] = module.Aggregate;
+                                dataTable.Rows.Add(row);
+                            }
+                            dataTable.Rows[i][$"{dataset.Label}"] = sum;
+                        }
+                    }
                 }
                 Table pdfTable = new Table(dataTable.Columns.Count);
                 pdfTable.SetWidth(UnitValue.CreatePercentValue(100));

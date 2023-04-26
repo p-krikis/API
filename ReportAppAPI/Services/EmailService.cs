@@ -55,7 +55,7 @@ namespace ReportAppAPI.Services
             var authToken = await PostCredentials();
             var startDate = DateTime.UtcNow.AddDays(-1).ToString("O");
             var endDate = DateTime.UtcNow.ToString("O");
-            var resolution = 60; //GetAutoReportInfo(autoReportInfo).Result.;
+            var resolution = 360; //GetAutoReportInfo(autoReportInfo).Result.;
             List<double> actualValues = new List<double>();
             List<DateTime> dateTimes = new List<DateTime>();
             var url = $"https://api.dei.prismasense.com/energy/v1/parameters/{module.Device.Site}/{paramId}/values/";
