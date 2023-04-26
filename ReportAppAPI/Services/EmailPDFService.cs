@@ -91,7 +91,7 @@ namespace ReportAppAPI.Services
                     }
                     else if (module.Aggregate == "average")
                     {
-                        var actualValues = _emailService.PostParamValues(module, paramId).Result.actualValues;
+                        var actualValues = _emailService.PostParamValues(module, paramId).Result.actualValues; 
                         double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
                         double sum = actualValuesArray.Average();
                         for (int i = 0; i < 1; i++)
