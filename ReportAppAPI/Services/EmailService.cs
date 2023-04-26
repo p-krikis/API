@@ -237,9 +237,28 @@ namespace ReportAppAPI.Services
             List<double> aggValues = new List<double>();
             for (int i = 0; i < module.Labels.Length; i++) //SHOULDN'T WORK MUST BE CHANGED
             {
-                paramId = module.Datasets[0].ParameterId;
-                var aggregatedValue = AggregatedChart(module);
-                aggValues.Add(aggregatedValue);
+                paramId = module.aggParamId[i];
+                double[] valueArray = PostParamValues(module, paramId).Result.actualValues.ToArray();
+                if (module.Aggregate == "sum")
+                {
+                    double aggregatedValue = valueArray.Sum();
+                    aggValues.Add(aggregatedValue);
+                }
+                else if(module.Aggregate == "average")
+                {
+                    double aggregatedValue = valueArray.Average();
+                    aggValues.Add(aggregatedValue);
+                }
+                else if(module.Aggregate == "min")
+                {
+                    double aggregatedValue = valueArray.Min();
+                    aggValues.Add(aggregatedValue);
+                }
+                else if(module.Aggregate == "max")
+                {
+                    double aggregatedValue = valueArray.Max();
+                    aggValues.Add(aggregatedValue);
+                }
             }
             double[] values = aggValues.ToArray();
             System.Drawing.Color backgroundColor = GetColorFromJToken(module.Datasets[0].BackgroundColor);
@@ -314,40 +333,5 @@ namespace ReportAppAPI.Services
                 return System.Drawing.Color.Black;
             }
         }
-        private double AggregatedChart(Module module)
-        {
-            if (module.Aggregate == "sum")
-            {
-                var actualValues = PostParamValues(module, module.Datasets[0].ParameterId).Result.actualValues;
-                double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
-                double sum = actualValuesArray.Sum();
-                return sum;
-            }
-            else if (module.Aggregate == "average")
-            {
-                var actualValues = PostParamValues(module, module.Datasets[0].ParameterId).Result.actualValues;
-                double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
-                double avg = actualValuesArray.Average();
-                return avg;
-            }
-            else if (module.Aggregate == "min")
-            {
-                var actualValues = PostParamValues(module, module.Datasets[0].ParameterId).Result.actualValues;
-                double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
-                double min = actualValuesArray.Min();
-                return min;
-            }
-            else if (module.Aggregate == "max")
-            {
-                var actualValues = PostParamValues(module, module.Datasets[0].ParameterId).Result.actualValues;
-                double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
-                double max = actualValuesArray.Max();
-                return max;
-            }
-            else
-            {
-                return 0;
-            }
-        } //template
     }
 }
