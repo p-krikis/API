@@ -210,9 +210,36 @@ namespace ReportAppAPI.Services
         }
         private void PlotPieChart(Module module, Plot plt)
         {
+            var paramId = module.Datasets[0].ParameterId;
             string chartTitle = GetChartTitle(module);
-            double[] values = module.Datasets[0].Data.Select(x => x.Value<double>()).ToArray();
-            string[] labels = module.Labels.ToArray();
+            List<double> aggValues = new List<double>();
+            string[] labels = module.Labels;
+            for(int i = 0; i < module.Labels.Length; i++)
+            {
+                paramId = module.aggParamId[i];
+                double[] valueArray = PostParamValues(module, paramId).Result.actualValues.ToArray();
+                if (module.Aggregate == "sum")
+                {
+                    double aggregatedValue = valueArray.Sum();
+                    aggValues.Add(aggregatedValue);
+                }
+                else if (module.Aggregate == "average")
+                {
+                    double aggregatedValue = valueArray.Average();
+                    aggValues.Add(aggregatedValue);
+                }
+                else if (module.Aggregate == "min")
+                {
+                    double aggregatedValue = valueArray.Min();
+                    aggValues.Add(aggregatedValue);
+                }
+                else if (module.Aggregate == "max")
+                {
+                    double aggregatedValue = valueArray.Max();
+                    aggValues.Add(aggregatedValue);
+                }
+            }
+            double[] values = aggValues.ToArray();
             var pie = plt.AddPie(values);
             plt.Title(chartTitle, size: 11);
             pie.ShowValues = true;
@@ -228,14 +255,14 @@ namespace ReportAppAPI.Services
                 backgroundColors[i] = GetColorFromJToken(module.Datasets[0].BackgroundColor[i]);
             }
             pie.SliceFillColors = backgroundColors;
-        } //NOT DONE YET// STUFF TO FIGURE OUT: How to get paramId properly for all parameters
+        }
         private void PlotAggregatedBarChart(Module module, Plot plt)
         {
             var paramId = module.Datasets[0].ParameterId;
             string chartTitle = GetChartTitle(module);
-            string[] labels = module.Labels.ToArray();
+            string[] labels = module.Labels;
             List<double> aggValues = new List<double>();
-            for (int i = 0; i < module.Labels.Length; i++) //SHOULDN'T WORK MUST BE CHANGED
+            for (int i = 0; i < module.Labels.Length; i++) //seems ok?
             {
                 paramId = module.aggParamId[i];
                 double[] valueArray = PostParamValues(module, paramId).Result.actualValues.ToArray();
