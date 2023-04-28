@@ -55,7 +55,7 @@ namespace ReportAppAPI.Services
             else
             {
                 var dataTable = new DataTable();
-                dataTable.Columns.Add($"{module.Aggregate}");
+                dataTable.Columns.Add($"{module.Device.Name}");
                 foreach (var dataset in module.Datasets)
                 {
                     dataTable.Columns.Add(dataset.Label);
@@ -63,7 +63,7 @@ namespace ReportAppAPI.Services
                 for (int i = 0; i < module.Labels.Length; i++)
                 {
                     var newRow = dataTable.NewRow();
-                    newRow[$"{module.Aggregate}"] = module.Labels[i];
+                    newRow[$"{module.Device.Name}"] = module.Labels[i];
                     for (int j = 0; j < module.Datasets.Length; j++)
                     {
                         newRow[module.Datasets[j].Label] = module.Datasets[j].Data[i];

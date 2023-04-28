@@ -5,6 +5,7 @@ using MimeKit;
 using Newtonsoft.Json;
 using ReportAppAPI.Models;
 using ReportAppAPI.Services;
+using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
 namespace ReportAppAPI.Controllers
 {
@@ -67,33 +68,14 @@ namespace ReportAppAPI.Controllers
         [HttpPost("emailReport/{id}")] //template
         public async Task<IActionResult> SendWeeklyReport([FromBody] AutoReport autoReport, int id)
         {
-            _timer = new PeriodicTimer(TimeSpan.FromDays(autoReport.ReportFrequency));
-            while (await _timer.WaitForNextTickAsync())
+            var jsonString = await _jsonDbService.GetJsonFileByIdAsync(id);
+            List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
+            foreach (var module in modules)
             {
-                var jsonString = await _jsonDbService.GetJsonFileByIdAsync(id);
-                List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
-                foreach (var module in modules)
-                {
-                    _emailService.PlotAutoChart(module);
-                }
-                byte[] pdf = _emailPDFService.buildPdf(modules);
-                var message = new MimeMessage();
-                message.From.Add(new MailboxAddress("ReportApp", "reportApp-autoUpdate@example.com"));
-                message.To.Add(new MailboxAddress("User", autoReport.Email));
-                message.Subject = "Weekly Report";
-                var builder = new BodyBuilder();
-                builder.TextBody = "Weekly report";
-                builder.Attachments.Add("report.pdf", pdf, ContentType.Parse("application/pdf"));
-                message.Body = builder.ToMessageBody();
-                using (var client = new SmtpClient())
-                {
-                    await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-                    await client.AuthenticateAsync("email", "password");
-                    await client.SendAsync(message);
-                    await client.DisconnectAsync(true);
-                }
+                _emailService.PlotAutoChart(module);
             }
-            return Ok("Email sent");
+            byte[] pdf = _emailPDFService.buildPdf(modules);
+            return File(pdf, "application/pdf", "report.pdf");
         }
 
         [HttpPut("stopAutoUpdates")]
@@ -110,3 +92,23 @@ namespace ReportAppAPI.Controllers
 //https://localhost:7095/api/chart/getSingleJSON/{id}
 //https://localhost:7095/api/chart/deleteSingleJSON/{id}
 //https://localhost:7095/api/chart/emailReport/{id}
+
+//_timer = new PeriodicTimer(TimeSpan.FromDays(autoReport.ReportFrequency));
+//while (await _timer.WaitForNextTickAsync())
+//{
+//    //var message = new MimeMessage();
+//    //message.From.Add(new MailboxAddress("ReportApp", "reportApp-autoUpdate@example.com"));
+//    //message.To.Add(new MailboxAddress("User", autoReport.Email));
+//    //message.Subject = "Weekly Report";
+//    //var builder = new BodyBuilder();
+//    //builder.TextBody = "Weekly report";
+//    //builder.Attachments.Add("report.pdf", pdf, ContentType.Parse("application/pdf"));
+//    //message.Body = builder.ToMessageBody();
+//    //using (var client = new SmtpClient())
+//    //{
+//    //    await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+//    //    await client.AuthenticateAsync("email", "password");
+//    //    await client.SendAsync(message);
+//    //    await client.DisconnectAsync(true);
+//    //}
+//}
