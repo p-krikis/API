@@ -14,14 +14,6 @@ namespace ReportAppAPI.Services
     {
         private static readonly HttpClient _httpClient = new HttpClient();
 
-        public async Task<(int reportFrequency, int resolution)> GetAutoReportInfo(string autoReport)
-        {
-            dynamic autoReportInfo = JsonConvert.DeserializeObject<AutoReport>(autoReport);
-            int reportFrequency = autoReportInfo.ReportFrequency;
-            int resolutionRequest = autoReportInfo.Resolution;
-            return (reportFrequency, resolutionRequest);
-        }
-
         public async Task<string> PostCredentials()
         {
             var loginRequest = new HttpRequestMessage
