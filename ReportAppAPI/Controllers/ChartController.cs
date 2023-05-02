@@ -5,7 +5,6 @@ using MimeKit;
 using Newtonsoft.Json;
 using ReportAppAPI.Models;
 using ReportAppAPI.Services;
-using static iText.StyledXmlParser.Jsoup.Select.Evaluator;
 
 namespace ReportAppAPI.Controllers
 {
@@ -68,14 +67,30 @@ namespace ReportAppAPI.Controllers
         [HttpPost("emailReport/{id}")] //template
         public async Task<IActionResult> SendWeeklyReport([FromBody] AutoReport autoReport, int id)
         {
-            var jsonString = await _jsonDbService.GetJsonFileByIdAsync(id);
-            List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
-            foreach (var module in modules)
+            int time = autoReport.Frequency;
+            _timer = new PeriodicTimer(TimeSpan.FromSeconds(time));
+            while (await _timer.WaitForNextTickAsync())
             {
-                _emailService.PlotAutoChart(module);
+                var jsonString = await _jsonDbService.GetJsonFileByIdAsync(id);
+                List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
+                foreach (var module in modules)
+                {
+                    _emailService.PlotAutoChart(module);
+                }
+                byte[] pdf = _emailPDFService.buildPdf(modules);
+                Console.WriteLine("Email sent");
+                return File(pdf, "application/pdf", "report.pdf");
+                //_emailService.SendEmail(autoReport.Email, pdf);
             }
-            byte[] pdf = _emailPDFService.buildPdf(modules);
-            return File(pdf, "application/pdf", "report.pdf");
+            return Ok();
+            //var jsonString = await _jsonDbService.GetJsonFileByIdAsync(id);
+            //List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
+            //foreach (var module in modules)
+            //{
+            //    _emailService.PlotAutoChart(module);
+            //}
+            //byte[] pdf = _emailPDFService.buildPdf(modules);
+            //return File(pdf, "application/pdf", "report.pdf");
         }
 
         [HttpPut("stopAutoUpdates")]
