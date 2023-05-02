@@ -74,7 +74,7 @@ namespace ReportAppAPI.Services
         {
             if (string.IsNullOrEmpty(module.Aggregate))
             {
-                return string.Format("{0}", module.Device.Name, module.Aggregate); //placeholder
+                return string.Format("{0}", module.Device.Name);
             }
             else
             {
