@@ -165,12 +165,55 @@ namespace ReportAppAPI.Services
 
         private void CreatePanelTable(Module module, Document document)
         {
-            int numColumns = 1;
-            Table panelTable = new Table(numColumns, true);
-            panelTable.AddHeaderCell(new Cell().Add(new Paragraph($"The {module.Aggregate} value of {module.Datasets[0].Label}")).SetTextAlignment(TextAlignment.CENTER));
-            panelTable.AddCell(new Cell().Add(new Paragraph($"The {module.Aggregate} value of {module.Datasets[0].Label} from {module.From} to {module.To} was {module.Datasets[0].Data[0]}")).SetTextAlignment(TextAlignment.CENTER));
-            document.Add(panelTable);
-            document.Add(new AreaBreak());
+            var paramId = module.Datasets[0].ParameterId;
+            if (module.Aggregate == "sum")
+            {
+                var actualValues = _emailService.PostParamValues(module, paramId).Result.actualValues;
+                double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
+                double sum = actualValuesArray.Sum();
+                int numColumns = 1;
+                Table panelTable = new Table(numColumns, true);
+                panelTable.AddHeaderCell(new Cell().Add(new Paragraph($"The {module.Aggregate} value of {module.Datasets[0].Label}")).SetTextAlignment(TextAlignment.CENTER));
+                panelTable.AddCell(new Cell().Add(new Paragraph($"The {module.Aggregate} value of {module.Datasets[0].Label} from {module.From} to {module.To} was {sum}")).SetTextAlignment(TextAlignment.CENTER));
+                document.Add(panelTable);
+                document.Add(new AreaBreak());
+            }
+            else if (module.Aggregate == "average")
+            {
+                var actualValues = _emailService.PostParamValues(module, paramId).Result.actualValues;
+                double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
+                double avg = actualValuesArray.Average();
+                int numColumns = 1;
+                Table panelTable = new Table(numColumns, true);
+                panelTable.AddHeaderCell(new Cell().Add(new Paragraph($"The {module.Aggregate} value of {module.Datasets[0].Label}")).SetTextAlignment(TextAlignment.CENTER));
+                panelTable.AddCell(new Cell().Add(new Paragraph($"The {module.Aggregate} value of {module.Datasets[0].Label} from {module.From} to {module.To} was {avg}")).SetTextAlignment(TextAlignment.CENTER));
+                document.Add(panelTable);
+                document.Add(new AreaBreak());
+            }
+            else if (module.Aggregate == "max")
+            {
+                var actualValues = _emailService.PostParamValues(module, paramId).Result.actualValues;
+                double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
+                double max = actualValuesArray.Max();
+                int numColumns = 1;
+                Table panelTable = new Table(numColumns, true);
+                panelTable.AddHeaderCell(new Cell().Add(new Paragraph($"The {module.Aggregate} value of {module.Datasets[0].Label}")).SetTextAlignment(TextAlignment.CENTER));
+                panelTable.AddCell(new Cell().Add(new Paragraph($"The {module.Aggregate} value of {module.Datasets[0].Label} from {module.From} to {module.To} was {max}")).SetTextAlignment(TextAlignment.CENTER));
+                document.Add(panelTable);
+                document.Add(new AreaBreak());
+            }
+            else if (module.Aggregate == "min")
+            {
+                var actualValues = _emailService.PostParamValues(module, paramId).Result.actualValues;
+                double[] actualValuesArray = actualValues.Select(x => (double)x).ToArray();
+                double min = actualValuesArray.Min();
+                int numColumns = 1;
+                Table panelTable = new Table(numColumns, true);
+                panelTable.AddHeaderCell(new Cell().Add(new Paragraph($"The {module.Aggregate} value of {module.Datasets[0].Label}")).SetTextAlignment(TextAlignment.CENTER));
+                panelTable.AddCell(new Cell().Add(new Paragraph($"The {module.Aggregate} value of {module.Datasets[0].Label} from {module.From} to {module.To} was {min}")).SetTextAlignment(TextAlignment.CENTER));
+                document.Add(panelTable);
+                document.Add(new AreaBreak());
+            }
         }
 
         private void CreateHeader(Module module, Document document)
