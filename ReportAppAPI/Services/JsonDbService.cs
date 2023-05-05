@@ -57,11 +57,18 @@ namespace ReportAppAPI.Services
                     command.Parameters.AddWithValue("@id", id);
                     using (var reader = await command.ExecuteReaderAsync())
                     {
-                        if (await reader.ReadAsync())
+                        try
                         {
-                            return reader.GetString(0);
+                            if (await reader.ReadAsync())
+                            {
+                                return reader.GetString(0);
+                            }
+                            else
+                            {
+                                return null;
+                            }
                         }
-                        else
+                        catch
                         {
                             return null;
                         }

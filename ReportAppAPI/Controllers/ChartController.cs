@@ -5,6 +5,7 @@ using MimeKit;
 using Newtonsoft.Json;
 using ReportAppAPI.Models;
 using ReportAppAPI.Services;
+using ScottPlot.Drawing.Colormaps;
 
 namespace ReportAppAPI.Controllers
 {
@@ -48,13 +49,20 @@ namespace ReportAppAPI.Controllers
         public async Task<IActionResult> GetSingleJSON(int id)
         {
             var jsonString = await _jsonDbService.GetJsonFileByIdAsync(id);
-            List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
-            foreach (var module in modules)
+            if (jsonString == null)
             {
-                _chartService.PlotChart(module);
+                return NotFound("The requested Id does not exist");
             }
-            byte[] pdf = _pdfbuildService.buildPdf(modules);
-            return File(pdf, "application/pdf", "report.pdf");
+            else
+            {
+                List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
+                foreach (var module in modules)
+                {
+                    _chartService.PlotChart(module);
+                }
+                byte[] pdf = _pdfbuildService.buildPdf(modules);
+                return File(pdf, "application/pdf", "report.pdf");
+            }
         }
 
         [HttpDelete("deleteSingleJSON/{id}")]
@@ -65,7 +73,7 @@ namespace ReportAppAPI.Controllers
         }
 
         [HttpPost("emailReport/{id}")] //template
-        public async Task<IActionResult> SendWeeklyReport([FromBody] AutoReport autoReport, int id)
+        public async Task<IActionResult> AutoSendReport([FromBody] AutoReport autoReport, int id)
         {
             int time = autoReport.Frequency;
             _timer = new PeriodicTimer(TimeSpan.FromSeconds(time));
@@ -82,7 +90,7 @@ namespace ReportAppAPI.Controllers
                 return File(pdf, "application/pdf", "report.pdf");
                 //_emailService.SendEmail(autoReport.Email, pdf);
             }
-            return Ok();
+            return Ok("Automated Updates enabled");
             //var jsonString = await _jsonDbService.GetJsonFileByIdAsync(id);
             //List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
             //foreach (var module in modules)
@@ -93,11 +101,11 @@ namespace ReportAppAPI.Controllers
             //return File(pdf, "application/pdf", "report.pdf");
         }
 
-        [HttpPut("stopAutoUpdates")]
+        [HttpGet("stopAutoUpdates")]
         public async Task<IActionResult> StopTimer()
         {
             _timer.Dispose();
-            return Ok("Timer stopped");
+            return Ok("Stopped automated reports");
         }
     }
 }
