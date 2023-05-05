@@ -72,11 +72,11 @@ namespace ReportAppAPI.Controllers
             return Ok("Deleted");
         }
 
-        [HttpPost("emailReport/{id}")] //template
+        [HttpPost("emailReport/{id}")]
         public async Task<IActionResult> AutoSendReport([FromBody] AutoReport autoReport, int id)
         {
             int time = autoReport.Frequency;
-            _timer = new PeriodicTimer(TimeSpan.FromSeconds(time));
+            _timer = new PeriodicTimer(TimeSpan.FromDays(time));
             while (await _timer.WaitForNextTickAsync())
             {
                 var jsonString = await _jsonDbService.GetJsonFileByIdAsync(id);
@@ -86,19 +86,23 @@ namespace ReportAppAPI.Controllers
                     _emailService.PlotAutoChart(module);
                 }
                 byte[] pdf = _emailPDFService.buildPdf(modules);
-                Console.WriteLine("Email sent");
-                return File(pdf, "application/pdf", "report.pdf");
-                //_emailService.SendEmail(autoReport.Email, pdf);
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress("ReportApp", "reportApp-autoUpdate@emaxmple.com"));
+                message.To.Add(new MailboxAddress("User", autoReport.Email));
+                message.Subject = "Weekly Report";
+                var builder = new BodyBuilder();
+                builder.TextBody = "Weekly report";
+                builder.Attachments.Add("report.pdf", pdf, ContentType.Parse("application/pdf"));
+                message.Body = builder.ToMessageBody();
+                using (var client = new SmtpClient())
+                {
+                    await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+                    await client.AuthenticateAsync("email", "password");
+                    await client.SendAsync(message);
+                    await client.DisconnectAsync(true);
+                }
             }
             return Ok("Automated Updates enabled");
-            //var jsonString = await _jsonDbService.GetJsonFileByIdAsync(id);
-            //List<Module> modules = JsonConvert.DeserializeObject<List<Module>>(jsonString);
-            //foreach (var module in modules)
-            //{
-            //    _emailService.PlotAutoChart(module);
-            //}
-            //byte[] pdf = _emailPDFService.buildPdf(modules);
-            //return File(pdf, "application/pdf", "report.pdf");
         }
 
         [HttpGet("stopAutoUpdates")]
@@ -115,23 +119,3 @@ namespace ReportAppAPI.Controllers
 //https://localhost:7095/api/chart/getSingleJSON/{id}
 //https://localhost:7095/api/chart/deleteSingleJSON/{id}
 //https://localhost:7095/api/chart/emailReport/{id}
-
-//_timer = new PeriodicTimer(TimeSpan.FromDays(autoReport.ReportFrequency));
-//while (await _timer.WaitForNextTickAsync())
-//{
-//    //var message = new MimeMessage();
-//    //message.From.Add(new MailboxAddress("ReportApp", "reportApp-autoUpdate@example.com"));
-//    //message.To.Add(new MailboxAddress("User", autoReport.Email));
-//    //message.Subject = "Weekly Report";
-//    //var builder = new BodyBuilder();
-//    //builder.TextBody = "Weekly report";
-//    //builder.Attachments.Add("report.pdf", pdf, ContentType.Parse("application/pdf"));
-//    //message.Body = builder.ToMessageBody();
-//    //using (var client = new SmtpClient())
-//    //{
-//    //    await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-//    //    await client.AuthenticateAsync("email", "password");
-//    //    await client.SendAsync(message);
-//    //    await client.DisconnectAsync(true);
-//    //}
-//}
