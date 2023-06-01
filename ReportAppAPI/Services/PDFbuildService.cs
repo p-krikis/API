@@ -168,7 +168,7 @@ namespace ReportAppAPI.Services
                         }
                     }
                 }
-                //document.Add(new AreaBreak());
+                document.Add(new AreaBreak());
                 int lastPageNumber = pdfDocument.GetNumberOfPages();
                 foreach (var image in images)
                 {

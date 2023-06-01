@@ -1,4 +1,5 @@
 ﻿using Dapper;
+using Newtonsoft.Json;
 using System.Data.SqlClient;
 
 namespace ReportAppAPI.Services

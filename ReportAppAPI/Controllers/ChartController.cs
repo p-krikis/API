@@ -33,7 +33,7 @@ namespace ReportAppAPI.Controllers
         public async Task<IActionResult> SaveJSON([FromBody] List<Module> modules)
         {
             string jsonString = JsonConvert.SerializeObject(modules);
-            string name = "report";
+            string name = "report"; //placeholder
             int id = await _jsonDbService.SaveFileAsync(name, jsonString);
             return Ok(new { Id = id, Name = name });
         }
